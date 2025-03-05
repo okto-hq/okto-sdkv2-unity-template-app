@@ -2,21 +2,21 @@
 #
 # Get latest from https://github.com/github/gitignore/blob/master/Unity.gitignore
 #
-/OktoSDKUnity/[Ll]ibrary/
-/OktoSDKUnity/[Tt]emp/
-/OktoSDKUnity/[Oo]bj/
-/OktoSDKUnity/[Bb]uild/
-/OktoSDKUnity/[Bb]uilds/
-/OktoSDKUnity/[Ll]ogs/
-/OktoSDKUnity/[Mm]emoryCaptures/
+/okto-unity/[Ll]ibrary/
+/okto-unity/[Tt]emp/
+/okto-unity/[Oo]bj/
+/okto-unity/[Bb]uild/
+/okto-unity/[Bb]uilds/
+/okto-unity/[Ll]ogs/
+/okto-unity/[Mm]emoryCaptures/
 
-/OktoSDKUnityIOS/[Ll]ibrary/
-/OktoSDKUnityIOS/[Tt]emp/
-/OktoSDKUnityIOS/[Oo]bj/
-/OktoSDKUnityIOS/[Bb]uild/
-/OktoSDKUnityIOS/[Bb]uilds/
-/OktoSDKUnityIOS/[Ll]ogs/
-/OktoSDKUnityIOS/[Mm]emoryCaptures/
+/okto-unity/[Ll]ibrary/
+/okto-unity/[Tt]emp/
+/okto-unity/[Oo]bj/
+/okto-unity/[Bb]uild/
+/okto-unity/[Bb]uilds/
+/okto-unity/[Ll]ogs/
+/okto-unity/[Mm]emoryCaptures/
 IOSBuild/Libraries/*.a
 
 # Asset meta data should only be ignored when the corresponding asset is also ignored
