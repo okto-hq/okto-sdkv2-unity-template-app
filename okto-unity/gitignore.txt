@@ -1,0 +1,55 @@
+# =============== #
+# Unity generated #
+# =============== #
+Temp/
+Library/
+Logs/
+MemoryCaptures/
+Obj/
+Builds/
+Build/
+ExportedObj/
+UserSettings/
+Packages/com.unity.package-manager-do-not-use.lock
+
+# ===================== #
+# Visual Studio / Rider #
+# ===================== #
+.vscode/
+*.csproj
+*.sln
+*.suo
+*.tmp
+*.user
+*.userprefs
+*.pidb
+*.booproj
+*.svd
+*.pdb
+*.opendb
+*.VC.db
+
+# ============ #
+# macOS / Linux #
+# ============ #
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+*.swp
+*.swo
+*.bak
+
+# =========== #
+# Windows     #
+# =========== #
+Thumbs.db
+Desktop.ini
+$RECYCLE.BIN/
+
+# =============== #
+# JetBrains IDEs  #
+# =============== #
+.idea/
+*.iml
