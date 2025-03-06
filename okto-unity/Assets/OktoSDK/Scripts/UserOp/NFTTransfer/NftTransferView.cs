@@ -283,34 +283,9 @@ namespace OktoSDK
         {
             // Execute UserOp
             JsonRpcResponse<ExecuteResult> txHash = await UserOpExecute.ExecuteUserOp(signedUserOp, signedUserOp.signature);
+            //clear all inputfield
+            OnClose();
             return txHash;
-        }
-
-        public static string ToHex(object value)
-        {
-            if (value is int intValue)
-            {
-                return $"0x{intValue:X}";
-            }
-            else if (value is BigInteger bigIntValue)
-            {
-                return $"0x{bigIntValue.ToString("X")}";
-            }
-            else if (value is string strValue)
-            {
-                if (BigInteger.TryParse(strValue, out BigInteger bigIntParsed))
-                {
-                    return $"0x{bigIntParsed.ToString("X")}";
-                }
-                else
-                {
-                    throw new ArgumentException($"Invalid string input: {strValue}. It must be a valid number.");
-                }
-            }
-            else
-            {
-                throw new ArgumentException($"Unsupported type: {value.GetType()}. Use int, BigInteger, or a valid numeric string.");
-            }
         }
 
 

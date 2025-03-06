@@ -1,5 +1,6 @@
 using System;
 using System.Numerics;
+using System.Runtime.InteropServices.WindowsRuntime;
 using System.Threading.Tasks;
 using Newtonsoft.Json;
 using TMPro;
@@ -55,7 +56,16 @@ namespace OktoSDK
 
         public async Task<string> ExecuteEvmRawTransaction(string network, string sender, string receipent, string value, string data)
         {
-            string hexValue = string.IsNullOrEmpty(value) ? "0x" : ToHex(value);
+            string hexValue = string.Empty;
+
+            try
+            {
+                 hexValue = string.IsNullOrEmpty(value) ? "0x" : ToHex(value);
+            }
+            catch (Exception ex)
+            {
+                return "Invalid Amount!";
+            }
 
             var transaction = unityCallDataEncoder.CreateTransaction(
                 from: sender,
@@ -107,11 +117,23 @@ namespace OktoSDK
                 return;
             }
 
+            string hexValue = string.Empty;
+
+            try
+            {
+                hexValue = string.IsNullOrEmpty(value.text) ? "0x" : ToHex(value);
+            }
+            catch (Exception ex)
+            {
+                ResponsePanel.SetResponse("Invalid Amount!");
+                return;
+            }
+
             var transaction = unityCallDataEncoder.CreateTransaction(
                 from: sender.text,
                 to: receipent.text,
                 data: string.IsNullOrEmpty(data.text) ? "0x" : data.text,  // No data for simple transfer
-                value: ToHex(value.text)
+                value: hexValue
             );
 
             userOp = await CreateUserOp(transaction);
@@ -231,34 +253,37 @@ namespace OktoSDK
         {
             // Execute UserOp
             JsonRpcResponse<ExecuteResult> txHash = await UserOpExecute.ExecuteUserOp(signedUserOp, signedUserOp.signature);
+            //clear all inputfield
+            OnClose();
             return txHash;
         }
 
         public static string ToHex(object value)
         {
-            if (value is int intValue)
-            {
-                return $"0x{intValue:X}";
-            }
-            else if (value is BigInteger bigIntValue)
-            {
-                return $"0x{bigIntValue.ToString("X")}";
-            }
-            else if (value is string strValue)
-            {
-                if (BigInteger.TryParse(strValue, out BigInteger bigIntParsed))
+                if (value is int intValue)
                 {
-                    return $"0x{bigIntParsed.ToString("X")}";
+                    return $"0x{intValue:X}";
+                }
+                else if (value is BigInteger bigIntValue)
+                {
+                    return $"0x{bigIntValue.ToString("X")}";
+                }
+                else if (value is string strValue)
+                {
+                    if (BigInteger.TryParse(strValue, out BigInteger bigIntParsed))
+                    {
+                        return $"0x{bigIntParsed.ToString("X")}";
+                    }
+                    else
+                    {
+                        throw new ArgumentException($"Invalid string input: {strValue}. It must be a valid number.");
+                    }
                 }
                 else
                 {
-                    throw new ArgumentException($"Invalid string input: {strValue}. It must be a valid number.");
+                    throw new ArgumentException($"Unsupported type: {value.GetType()}. Use int, BigInteger, or a valid numeric string.");
                 }
-            }
-            else
-            {
-                throw new ArgumentException($"Unsupported type: {value.GetType()}. Use int, BigInteger, or a valid numeric string.");
-            }
+          
         }
 
 
