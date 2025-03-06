@@ -121,7 +121,7 @@ namespace OktoSDK
 
             try
             {
-                hexValue = string.IsNullOrEmpty(value.text) ? "0x" : ToHex(value);
+                hexValue = string.IsNullOrEmpty(value.text) ? "0x" : ToHex(value.text);
             }
             catch (Exception ex)
             {
@@ -186,15 +186,6 @@ namespace OktoSDK
                 return;
             }
 
-            BigInteger parsedAmount;
-            if (BigInteger.TryParse(value.text, out parsedAmount))
-            {
-                if (parsedAmount <= 0)
-                {
-                    ResponsePanel.SetResponse("Enter valid amount");
-                    return;
-                }
-            }
 
             Debug.Log("Transaction button clicked");
             string txHashStr = await ExecuteEvmRawTransaction(network, sender.text, receipent.text, value.text, data.text);
@@ -283,7 +274,6 @@ namespace OktoSDK
                 {
                     throw new ArgumentException($"Unsupported type: {value.GetType()}. Use int, BigInteger, or a valid numeric string.");
                 }
-          
         }
 
 

@@ -23004,6 +23004,7 @@ MonoBehaviour:
   environment: {fileID: 991982067}
   clientPrivateKey: {fileID: 487738787}
   clientSWA: {fileID: 1866350615}
+  googleLogin: {fileID: 559360369}
 --- !u!1 &1337346724
 GameObject:
   m_ObjectHideFlags: 0
@@ -29960,9 +29961,9 @@ MonoBehaviour:
   m_OnClick:
     m_PersistentCalls:
       m_Calls:
-      - m_Target: {fileID: 559360369}
-        m_TargetAssemblyTypeName: Login, Assembly-CSharp
-        m_MethodName: OnLoginButtonClicked
+      - m_Target: {fileID: 1335282994}
+        m_TargetAssemblyTypeName: OktoSDK.OktoAuthExample, Assembly-CSharp
+        m_MethodName: OnCheckValidation
         m_Mode: 1
         m_Arguments:
           m_ObjectArgument: {fileID: 0}

@@ -25,37 +25,28 @@ namespace OktoSDK
 
         private static OktoAuthExample _instance;
 
+        public Login googleLogin;
+
         void OnEnable()
         {
             _instance = this;
-
-            try
-            {
-                // Initialize the Okto client
-                config = new OktoClientConfig
-                {
-                    Environment = environment.options[environment.value].text,
-                    ClientPrivateKey = clientPrivateKey.text,
-                    ClientSWA = clientSWA.text
-                };
-
-                _oktoClient = new OktoClient(config);
-
-
-                //Debug.Log("Initialized _oktoClient " + JsonConvert.SerializeObject(_oktoClient));
-                //Debug.Log("config " + JsonConvert.SerializeObject(config));
-
-            }
-            catch (Exception ex)
-            {
-                Debug.Log("Exception " + ex.Message);
-            }
         }
 
         public void SaveConfig()
         {
-            _instance = this;
             // Initialize the Okto client
+            if (string.IsNullOrEmpty(clientPrivateKey.text))
+            {
+                ResponsePanel.SetResponse("clientPrivateKey is required");
+                return;
+            }
+
+            if (string.IsNullOrEmpty(clientSWA.text))
+            {
+                ResponsePanel.SetResponse("clientSWA is required");
+                return;
+            }
+
             config = new OktoClientConfig
             {
                 Environment = environment.options[environment.value].text,
@@ -65,12 +56,40 @@ namespace OktoSDK
 
             _oktoClient = new OktoClient(config);
 
-            //Debug.Log("SaveConfig _oktoClient " + JsonConvert.SerializeObject(_oktoClient));
-            //Debug.Log("config " + JsonConvert.SerializeObject(config));
+
+            Debug.Log("SaveConfig _oktoClient " + JsonConvert.SerializeObject(_oktoClient));
+            Debug.Log("config " + JsonConvert.SerializeObject(config));
 
             //log out if already logged In
             SilentLogout();
             ResponsePanel.SetResponse("Configuration Updated Sucessfully!");
+        }
+
+
+        public void OnCheckValidation()
+        {
+            if (string.IsNullOrEmpty(clientPrivateKey.text))
+            {
+                ResponsePanel.SetResponse("clientPrivateKey is required");
+                return;
+            }
+
+            if (string.IsNullOrEmpty(clientSWA.text))
+            {
+                ResponsePanel.SetResponse("clientSWA is required");
+                return;
+            }
+
+            config = new OktoClientConfig
+            {
+                Environment = environment.options[environment.value].text,
+                ClientPrivateKey = clientPrivateKey.text,
+                ClientSWA = clientSWA.text
+            };
+
+            _oktoClient = new OktoClient(config);
+            
+            googleLogin.OnLoginButtonClicked();
         }
 
         public static void OnLogin()
@@ -129,14 +148,22 @@ namespace OktoSDK
 
         public void Logout()
         {
-            _oktoClient.SessionClear();
+            if (_oktoClient != null)
+            {
+                _oktoClient.SessionClear();
+            }
+
             ResponsePanel.SetResponse("Logged Out Successfully!");
             Debug.Log("Logged out successfully");
         }
 
         public void SilentLogout()
         {
-            _oktoClient.SessionClear();
+            if( _oktoClient != null)
+            {
+                _oktoClient.SessionClear();
+            }
+
             Debug.Log("Logged out successfully");
         }
     }
