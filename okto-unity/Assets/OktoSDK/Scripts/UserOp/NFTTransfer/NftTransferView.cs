@@ -86,6 +86,8 @@ namespace OktoSDK
             JsonRpcResponse<ExecuteResult> txHash = await ExecuteUserOp(userOp);
             string txHashStr = JsonConvert.SerializeObject(txHash, Formatting.Indented);
 
+            //clear all inputfield
+            OnClose();
             return txHashStr;
         }
 

@@ -22,9 +22,6 @@ namespace OktoSDK
         private TMP_Dropdown chainList;
 
         [SerializeField]
-        private TextMeshProUGUI dropDownLabel;
-
-        [SerializeField]
         private GameObject emvPanel;
 
         [SerializeField]
@@ -110,9 +107,10 @@ namespace OktoSDK
             {
                 for (int i = 0; i < walletList.Count; i++)
                 {
-                    if (walletList[i].networkName.ToLower().Equals(dropDownLabel.text.ToLower()))
+                    if (walletList[i].networkName.ToLower().Equals(chainList.options[chainList.value].text.ToLower()))
                     {
                         Debug.Log("SetCurrent_Network " + walletList[i].capId);
+                        address.text = walletList[i].address;
                         EvmRawView.SetNetwork(walletList[i].capId);
                         break;
                     }
@@ -142,10 +140,8 @@ namespace OktoSDK
         private void SelectChain(int index)
         {
             Loader.ShowLoader();
-            dropDownLabel.text = chainList.options[index].text;
 
             SetChain();
-            address.text = OktoAuthExample.getOktoClient().UserSWA;
         }
 
     }

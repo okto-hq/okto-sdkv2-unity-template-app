@@ -22794,7 +22794,6 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   chainList: {fileID: 1198805544}
-  dropDownLabel: {fileID: 2128535663}
   emvPanel: {fileID: 1337346724}
   evmRawTransaction: {fileID: 1877184108}
   address: {fileID: 2035202726}
@@ -33452,7 +33451,6 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   chainList: {fileID: 463601043}
-  dropDownLabel: {fileID: 1088750097}
   transferPanel: {fileID: 1026395988}
   transferTokenTransaction: {fileID: 1767127709}
   closeBtn: {fileID: 1190860749}
@@ -34575,7 +34573,6 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   chainList: {fileID: 536282564}
-  dropDownLabel: {fileID: 623768803}
   nftPanel: {fileID: 1688404862}
   nftTransaction: {fileID: 1158308637}
   closeBtn: {fileID: 561072458}

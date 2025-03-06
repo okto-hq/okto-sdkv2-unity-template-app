@@ -79,6 +79,9 @@ namespace OktoSDK
 
             Debug.Log($"Transaction executed. Hash: {txHashStr}");
 
+            //clear all inputfield
+            OnClose();
+
             return txHashStr;
         }
 

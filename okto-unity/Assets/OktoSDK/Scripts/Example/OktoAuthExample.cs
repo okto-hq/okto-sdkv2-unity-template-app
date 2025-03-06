@@ -7,7 +7,6 @@ using System;
 //This script is an authentication entry point
 namespace OktoSDK
 {
-
     public class OktoAuthExample : MonoBehaviour
     {
         private OktoClient _oktoClient;
@@ -69,14 +68,9 @@ namespace OktoSDK
             //Debug.Log("SaveConfig _oktoClient " + JsonConvert.SerializeObject(_oktoClient));
             //Debug.Log("config " + JsonConvert.SerializeObject(config));
 
-            //lpg out if already logged In
-            if (getOktoClient() != null)
-            {
-                if (getOktoClient().IsLoggedIn())
-                {
-                    Logout();
-                }
-            }
+            //log out if already logged In
+            SilentLogout();
+            ResponsePanel.SetResponse("Configuration Updated Sucessfully!");
         }
 
         public static void OnLogin()
@@ -140,6 +134,10 @@ namespace OktoSDK
             Debug.Log("Logged out successfully");
         }
 
-
+        public void SilentLogout()
+        {
+            _oktoClient.SessionClear();
+            Debug.Log("Logged out successfully");
+        }
     }
 }
