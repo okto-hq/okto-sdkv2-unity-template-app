@@ -57,8 +57,8 @@ namespace OktoSDK
             _oktoClient = new OktoClient(config);
 
 
-            Debug.Log("SaveConfig _oktoClient " + JsonConvert.SerializeObject(_oktoClient));
-            Debug.Log("config " + JsonConvert.SerializeObject(config));
+            //Debug.Log("SaveConfig _oktoClient " + JsonConvert.SerializeObject(_oktoClient));
+            //Debug.Log("config " + JsonConvert.SerializeObject(config));
 
             //log out if already logged In
             SilentLogout();
