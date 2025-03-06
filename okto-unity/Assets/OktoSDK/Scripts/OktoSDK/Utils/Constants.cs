@@ -12,7 +12,10 @@ namespace OktoSDK
 
         public static readonly ulong USEROP_VALUE = 0;
 
-    
+        public static readonly string MaxPriorityFeePerGas = "0xBA43B7400";
+
+        public static readonly string MaxFeePerGas = "0xBA43B7400";
+
         public static readonly EnvConfig SandboxEnvConfig = new EnvConfig
         {
             GatewayBaseUrl = "https://sandbox-okto-gateway.oktostage.com",

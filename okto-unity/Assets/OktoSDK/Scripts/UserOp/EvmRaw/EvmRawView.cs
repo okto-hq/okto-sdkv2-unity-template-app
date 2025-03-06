@@ -53,15 +53,15 @@ namespace OktoSDK
             return _instance.network;
         }
 
-        public async Task<string> ExecuteSimpleTransaction(string network, string sender, string receipent, string value, string data)
+        public async Task<string> ExecuteEvmRawTransaction(string network, string sender, string receipent, BigInteger value, string data)
         {
-            string hexValue = string.IsNullOrEmpty(value) ? "0x00" : ToHex(value);
+            //string hexValue = string.IsNullOrEmpty(value) ? "0x00" : ToHex(value);
 
             var transaction = unityCallDataEncoder.CreateTransaction(
                 from: sender,
                 to: receipent,
                 data: string.IsNullOrEmpty(data) ? "0x00" : data,
-                value: string.IsNullOrEmpty(value) ? "0x00" : hexValue
+                value: value
             );
 
             userOp = await CreateUserOp(transaction);
@@ -105,11 +105,21 @@ namespace OktoSDK
                 return;
             }
 
+            BigInteger parsedAmount;
+            if (BigInteger.TryParse(value.text, out parsedAmount))
+            {
+                if (parsedAmount <= 0)
+                {
+                    ResponsePanel.SetResponse("Enter valid amount");
+                    return;
+                }
+            }
+
             var transaction = unityCallDataEncoder.CreateTransaction(
                 from: sender.text,
                 to: receipent.text,
                 data: string.IsNullOrEmpty(data.text) ? "0x00" : data.text,  // No data for simple transfer
-                value: ToHex(value.text)
+                value: parsedAmount
             );
 
             userOp = await CreateUserOp(transaction);
@@ -162,8 +172,18 @@ namespace OktoSDK
                 return;
             }
 
+            BigInteger parsedAmount;
+            if (BigInteger.TryParse(value.text, out parsedAmount))
+            {
+                if (parsedAmount <= 0)
+                {
+                    ResponsePanel.SetResponse("Enter valid amount");
+                    return;
+                }
+            }
+
             Debug.Log("Transaction button clicked");
-            string txHashStr = await ExecuteSimpleTransaction(network, sender.text, receipent.text, value.text, data.text);
+            string txHashStr = await ExecuteEvmRawTransaction(network, sender.text, receipent.text, parsedAmount, data.text);
             ResponsePanel.SetResponse(txHashStr);
 
         }
@@ -262,11 +282,10 @@ namespace OktoSDK
                     from = "0xc3AC3F050CCa482CF6F53070541A7B61A71C4abd",
                     to = "0xEE54970770DFC6cA138D12e0D9Ccc7D20b899089",
                     data = "",
-                    value = "1"
+                    value = 1
                 };
 
-                Debug.Log("Starting TestTokenTransfer");
-                string txHashStr = await ExecuteSimpleTransaction(
+                string txHashStr = await ExecuteEvmRawTransaction(
                     "eip155:137",
                     transferParams.from,
                     transferParams.to,
@@ -274,6 +293,7 @@ namespace OktoSDK
                     transferParams.data);
 
                 Debug.Log($"Transaction executed. Hash: {txHashStr}");
+                Debug.Log("Starting TestTokenTransfer");
 
                 ResponsePanel.SetResponse(txHashStr);
             }
@@ -293,11 +313,11 @@ namespace OktoSDK
                 from = "",
                 to = "",
                 data = "0x18160ddd",
-                value = ""
+                value = 1
             };
 
             Debug.Log("Starting TestTokenTransfer");
-            string txHashStr = await ExecuteSimpleTransaction(
+            string txHashStr = await ExecuteEvmRawTransaction(
                 "eip155:137",
                 transferParams.from,
                 transferParams.to,

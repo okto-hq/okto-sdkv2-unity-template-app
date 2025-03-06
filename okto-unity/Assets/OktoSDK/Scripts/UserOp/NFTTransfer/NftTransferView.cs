@@ -62,7 +62,7 @@ namespace OktoSDK
         }
 
 
-        public async Task<string> ExecuteSimpleTransaction(string recipientWalletAddress,
+        public async Task<string> ExecuteNFTTransaction(string recipientWalletAddress,
             string collectionAddress,
             string nftId, int amount, string type, string network)
         {
@@ -229,7 +229,7 @@ namespace OktoSDK
                 }
             }
 
-            string txHashStr = await ExecuteSimpleTransaction(receiptAddress.text, collectionAddress.text, nftId.text, amountParsed, nftType.text, network);
+            string txHashStr = await ExecuteNFTTransaction(receiptAddress.text, collectionAddress.text, nftId.text, amountParsed, nftType.text, network);
             ResponsePanel.SetResponse(txHashStr);
         }
 
@@ -326,14 +326,15 @@ namespace OktoSDK
                 amount = 1
             };
 
-            Debug.Log("Starting TestTokenTransfer");
-            string txHashStr = await ExecuteSimpleTransaction(
+            string txHashStr = await ExecuteNFTTransaction(
                 transferParams.recipientWalletAddress,
                 transferParams.collectionAddress,
                 transferParams.nftId,
                 transferParams.amount,
                 transferParams.nftType,
                 network);
+
+            Debug.Log("Starting TestTokenTransfer");
 
             Debug.Log($"Transaction executed. Hash: {txHashStr}");
             ResponsePanel.SetResponse(txHashStr);

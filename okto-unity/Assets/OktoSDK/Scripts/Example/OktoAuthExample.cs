@@ -41,13 +41,15 @@ namespace OktoSDK
                 };
 
                 _oktoClient = new OktoClient(config);
-                Debug.Log("Initialized _oktoClient " + JsonConvert.SerializeObject(_oktoClient));
-                Debug.Log("config " + JsonConvert.SerializeObject(config));
+
+
+                //Debug.Log("Initialized _oktoClient " + JsonConvert.SerializeObject(_oktoClient));
+                //Debug.Log("config " + JsonConvert.SerializeObject(config));
 
             }
             catch (Exception ex)
             {
-                 Debug.Log("Exception "+ex.Message);
+                Debug.Log("Exception " + ex.Message);
             }
         }
 
@@ -64,10 +66,17 @@ namespace OktoSDK
 
             _oktoClient = new OktoClient(config);
 
-            Debug.Log("SaveConfig _oktoClient " + JsonConvert.SerializeObject(_oktoClient));
-            Debug.Log("config " + JsonConvert.SerializeObject(config));
+            //Debug.Log("SaveConfig _oktoClient " + JsonConvert.SerializeObject(_oktoClient));
+            //Debug.Log("config " + JsonConvert.SerializeObject(config));
 
-            Logout();
+            //lpg out if already logged In
+            if (getOktoClient() != null)
+            {
+                if (getOktoClient().IsLoggedIn())
+                {
+                    Logout();
+                }
+            }
         }
 
         public static void OnLogin()
@@ -91,7 +100,6 @@ namespace OktoSDK
         }
 
         public static async void LoginWithGoogle(string idToken, string provider)
-
         {
             try
             {
@@ -120,8 +128,6 @@ namespace OktoSDK
             }
             catch (System.Exception e)
             {
-                //ResponsePanel.SetResponse($"Login failed: {e.Message}");
-
                 Loader.DisableLoader();
                 Debug.Log($"Login failed: {e.Message}");
             }
@@ -133,5 +139,7 @@ namespace OktoSDK
             ResponsePanel.SetResponse("Logged Out Successfully!");
             Debug.Log("Logged out successfully");
         }
+
+
     }
 }

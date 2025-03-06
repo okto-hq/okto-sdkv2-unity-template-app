@@ -50,7 +50,7 @@ namespace OktoSDK
             var nonce = Guid.NewGuid().ToString("D");
             Debug.Log($"Generated nonce: {nonce}");
             Debug.Log($"client: {client}");
-            Debug.Log($"clientSWA: {clientSWA}");
+            //Debug.Log($"clientSWA: {clientSWA}");
             Debug.Log($"client.Env.PaymasterAddress: {client.Env.PaymasterAddress}");
             Debug.Log($"clientPriv: {client.Env.PaymasterAddress}");
 
@@ -59,8 +59,8 @@ namespace OktoSDK
                 Nonce = nonce,
                 ClientSWA = clientSWA,
                 SessionPk = sessionKey.UncompressedPublicKeyHexWith0x,
-                MaxPriorityFeePerGas = "0xBA43B7400",
-                MaxFeePerGas = "0xBA43B7400",
+                MaxPriorityFeePerGas = Constants.MaxPriorityFeePerGas,
+                MaxFeePerGas = Constants.MaxFeePerGas,
                 Paymaster = client.Env.PaymasterAddress,
                 PaymasterData = await PaymasterDataGenerator.Generate(
                     clientSWA,
