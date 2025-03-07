@@ -62,7 +62,7 @@ namespace OktoSDK
         }
 
 
-        public async Task<string> ExecuteSimpleTransaction(string recipientWalletAddress,
+        public async Task<string> ExecuteNFTTransaction(string recipientWalletAddress,
             string collectionAddress,
             string nftId, int amount, string type, string network)
         {
@@ -86,6 +86,8 @@ namespace OktoSDK
             JsonRpcResponse<ExecuteResult> txHash = await ExecuteUserOp(userOp);
             string txHashStr = JsonConvert.SerializeObject(txHash, Formatting.Indented);
 
+            //clear all inputfield
+            OnClose();
             return txHashStr;
         }
 
@@ -229,7 +231,7 @@ namespace OktoSDK
                 }
             }
 
-            string txHashStr = await ExecuteSimpleTransaction(receiptAddress.text, collectionAddress.text, nftId.text, amountParsed, nftType.text, network);
+            string txHashStr = await ExecuteNFTTransaction(receiptAddress.text, collectionAddress.text, nftId.text, amountParsed, nftType.text, network);
             ResponsePanel.SetResponse(txHashStr);
         }
 
@@ -281,34 +283,9 @@ namespace OktoSDK
         {
             // Execute UserOp
             JsonRpcResponse<ExecuteResult> txHash = await UserOpExecute.ExecuteUserOp(signedUserOp, signedUserOp.signature);
+            //clear all inputfield
+            OnClose();
             return txHash;
-        }
-
-        public static string ToHex(object value)
-        {
-            if (value is int intValue)
-            {
-                return $"0x{intValue:X}";
-            }
-            else if (value is BigInteger bigIntValue)
-            {
-                return $"0x{bigIntValue.ToString("X")}";
-            }
-            else if (value is string strValue)
-            {
-                if (BigInteger.TryParse(strValue, out BigInteger bigIntParsed))
-                {
-                    return $"0x{bigIntParsed.ToString("X")}";
-                }
-                else
-                {
-                    throw new ArgumentException($"Invalid string input: {strValue}. It must be a valid number.");
-                }
-            }
-            else
-            {
-                throw new ArgumentException($"Unsupported type: {value.GetType()}. Use int, BigInteger, or a valid numeric string.");
-            }
         }
 
 
@@ -326,14 +303,15 @@ namespace OktoSDK
                 amount = 1
             };
 
-            Debug.Log("Starting TestTokenTransfer");
-            string txHashStr = await ExecuteSimpleTransaction(
+            string txHashStr = await ExecuteNFTTransaction(
                 transferParams.recipientWalletAddress,
                 transferParams.collectionAddress,
                 transferParams.nftId,
                 transferParams.amount,
                 transferParams.nftType,
                 network);
+
+            Debug.Log("Starting TestTokenTransfer");
 
             Debug.Log($"Transaction executed. Hash: {txHashStr}");
             ResponsePanel.SetResponse(txHashStr);

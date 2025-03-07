@@ -24,9 +24,6 @@ namespace OktoSDK
         private TMP_Dropdown chainList;
 
         [SerializeField]
-        private TextMeshProUGUI dropDownLabel;
-
-        [SerializeField]
         private GameObject nftPanel;
 
         [SerializeField]
@@ -108,7 +105,7 @@ namespace OktoSDK
             {
                 for (int i = 0; i < walletList.Count; i++)
                 {
-                    if (walletList[i].networkName.ToLower().Equals(dropDownLabel.text.ToLower()))
+                    if (walletList[i].networkName.ToLower().Equals(chainList.options[chainList.value].text.ToLower()))
                     {
                         Debug.Log("SetCurrentNetwork " + walletList[i].capId);
                         NftTransferView.SetNetwork(walletList[i].capId);
@@ -139,7 +136,6 @@ namespace OktoSDK
         private void SelectChain(int index)
         {
             Loader.ShowLoader();
-            dropDownLabel.text = chainList.options[index].text;
 
             SetChain();
         }

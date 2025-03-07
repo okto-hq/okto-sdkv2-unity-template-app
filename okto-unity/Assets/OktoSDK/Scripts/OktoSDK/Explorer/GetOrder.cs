@@ -11,6 +11,12 @@ namespace OktoSDK
         public async Task<object> GetOrdersHistory(OktoClient oc, OrderFilterRequest filters = null)
         {
 
+            if (oc == null)
+            {
+                ResponsePanel.SetOrderResponse("You are not logged In!");
+                return "You are not logged In!";
+            }
+
             if (!oc.IsLoggedIn())
             {
                 ResponsePanel.SetOrderResponse("You are not logged In!");

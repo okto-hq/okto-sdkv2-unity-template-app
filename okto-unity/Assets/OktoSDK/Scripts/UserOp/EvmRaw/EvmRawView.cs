@@ -1,5 +1,6 @@
 using System;
 using System.Numerics;
+using System.Runtime.InteropServices.WindowsRuntime;
 using System.Threading.Tasks;
 using Newtonsoft.Json;
 using TMPro;
@@ -53,15 +54,24 @@ namespace OktoSDK
             return _instance.network;
         }
 
-        public async Task<string> ExecuteSimpleTransaction(string network, string sender, string receipent, string value, string data)
+        public async Task<string> ExecuteEvmRawTransaction(string network, string sender, string receipent, string value, string data)
         {
-            string hexValue = string.IsNullOrEmpty(value) ? "0x00" : ToHex(value);
+            string hexValue = string.Empty;
+
+            try
+            {
+                 hexValue = string.IsNullOrEmpty(value) ? "0x" : ToHex(value);
+            }
+            catch (Exception ex)
+            {
+                return "Invalid Amount!";
+            }
 
             var transaction = unityCallDataEncoder.CreateTransaction(
                 from: sender,
                 to: receipent,
-                data: string.IsNullOrEmpty(data) ? "0x00" : data,
-                value: string.IsNullOrEmpty(value) ? "0x00" : hexValue
+                data: string.IsNullOrEmpty(data) ? "0x" : data,
+                value: hexValue
             );
 
             userOp = await CreateUserOp(transaction);
@@ -78,6 +88,8 @@ namespace OktoSDK
 
             Debug.Log($"Transaction executed. Hash: {txHashStr}");
 
+            //clear all inputfield
+            OnClose();
             return txHashStr;
         }
 
@@ -105,11 +117,23 @@ namespace OktoSDK
                 return;
             }
 
+            string hexValue = string.Empty;
+
+            try
+            {
+                hexValue = string.IsNullOrEmpty(value.text) ? "0x" : ToHex(value.text);
+            }
+            catch (Exception ex)
+            {
+                ResponsePanel.SetResponse("Invalid Amount!");
+                return;
+            }
+
             var transaction = unityCallDataEncoder.CreateTransaction(
                 from: sender.text,
                 to: receipent.text,
-                data: string.IsNullOrEmpty(data.text) ? "0x00" : data.text,  // No data for simple transfer
-                value: ToHex(value.text)
+                data: string.IsNullOrEmpty(data.text) ? "0x" : data.text,  // No data for simple transfer
+                value: hexValue
             );
 
             userOp = await CreateUserOp(transaction);
@@ -162,8 +186,9 @@ namespace OktoSDK
                 return;
             }
 
+
             Debug.Log("Transaction button clicked");
-            string txHashStr = await ExecuteSimpleTransaction(network, sender.text, receipent.text, value.text, data.text);
+            string txHashStr = await ExecuteEvmRawTransaction(network, sender.text, receipent.text, value.text, data.text);
             ResponsePanel.SetResponse(txHashStr);
 
         }
@@ -219,34 +244,36 @@ namespace OktoSDK
         {
             // Execute UserOp
             JsonRpcResponse<ExecuteResult> txHash = await UserOpExecute.ExecuteUserOp(signedUserOp, signedUserOp.signature);
+            //clear all inputfield
+            OnClose();
             return txHash;
         }
 
         public static string ToHex(object value)
         {
-            if (value is int intValue)
-            {
-                return $"0x{intValue:X}";
-            }
-            else if (value is BigInteger bigIntValue)
-            {
-                return $"0x{bigIntValue.ToString("X")}";
-            }
-            else if (value is string strValue)
-            {
-                if (BigInteger.TryParse(strValue, out BigInteger bigIntParsed))
+                if (value is int intValue)
                 {
-                    return $"0x{bigIntParsed.ToString("X")}";
+                    return $"0x{intValue:X}";
+                }
+                else if (value is BigInteger bigIntValue)
+                {
+                    return $"0x{bigIntValue.ToString("X")}";
+                }
+                else if (value is string strValue)
+                {
+                    if (BigInteger.TryParse(strValue, out BigInteger bigIntParsed))
+                    {
+                        return $"0x{bigIntParsed.ToString("X")}";
+                    }
+                    else
+                    {
+                        throw new ArgumentException($"Invalid string input: {strValue}. It must be a valid number.");
+                    }
                 }
                 else
                 {
-                    throw new ArgumentException($"Invalid string input: {strValue}. It must be a valid number.");
+                    throw new ArgumentException($"Unsupported type: {value.GetType()}. Use int, BigInteger, or a valid numeric string.");
                 }
-            }
-            else
-            {
-                throw new ArgumentException($"Unsupported type: {value.GetType()}. Use int, BigInteger, or a valid numeric string.");
-            }
         }
 
 
@@ -261,12 +288,11 @@ namespace OktoSDK
                 {
                     from = "0xc3AC3F050CCa482CF6F53070541A7B61A71C4abd",
                     to = "0xEE54970770DFC6cA138D12e0D9Ccc7D20b899089",
-                    data = "",
-                    value = "1"
+                    data = "0x",
+                    value = ToHex(1)
                 };
 
-                Debug.Log("Starting TestTokenTransfer");
-                string txHashStr = await ExecuteSimpleTransaction(
+                string txHashStr = await ExecuteEvmRawTransaction(
                     "eip155:137",
                     transferParams.from,
                     transferParams.to,
@@ -274,6 +300,7 @@ namespace OktoSDK
                     transferParams.data);
 
                 Debug.Log($"Transaction executed. Hash: {txHashStr}");
+                Debug.Log("Starting TestTokenTransfer");
 
                 ResponsePanel.SetResponse(txHashStr);
             }
@@ -281,33 +308,6 @@ namespace OktoSDK
             {
                 Debug.LogError($"Error in TestTokenTransfer: {ex.Message}");
             }
-        }
-
-        //Test cases--------------
-        // Example usage method
-        //Note :- Input your own details to test manually
-        public async void TestContractRead()
-        {
-            var transferParams = new Transaction
-            {
-                from = "",
-                to = "",
-                data = "0x18160ddd",
-                value = ""
-            };
-
-            Debug.Log("Starting TestTokenTransfer");
-            string txHashStr = await ExecuteSimpleTransaction(
-                "eip155:137",
-                transferParams.from,
-                transferParams.to,
-                transferParams.value,
-                transferParams.data);
-
-            Debug.Log($"Transaction executed. Hash: {txHashStr}");
-
-            ResponsePanel.SetResponse(txHashStr);
-
         }
 
     }

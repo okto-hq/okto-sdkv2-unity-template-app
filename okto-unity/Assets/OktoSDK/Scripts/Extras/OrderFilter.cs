@@ -47,6 +47,18 @@ namespace OktoSDK
 
         async void CallApi()
         {
+            if (OktoAuthExample.getOktoClient() == null)
+            {
+                ResponsePanel.SetOrderResponse("You are not logged In!");
+                return;
+            }
+
+            if (!OktoAuthExample.getOktoClient().IsLoggedIn())
+            {
+                ResponsePanel.SetOrderResponse("You are not logged In!");
+                return;
+            }
+
             intentId.text = string.Empty;
 
             newOrderList = new List<Order>();

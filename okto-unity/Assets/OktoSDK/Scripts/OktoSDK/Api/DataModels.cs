@@ -388,7 +388,6 @@ namespace OktoSDK
                 {
                     _details = JsonConvert.DeserializeObject<NftTransferDetails>(value.ToString());
                 }
-                // Add other types as needed
             }
         }
 

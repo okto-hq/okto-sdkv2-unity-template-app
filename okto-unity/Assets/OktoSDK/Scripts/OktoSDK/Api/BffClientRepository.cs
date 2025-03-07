@@ -110,7 +110,14 @@ namespace OktoSDK
         {
 
             var response = await bffClient.Get<ApiResponse<List<Wallet>>>(Routes.GetWallets);
-            if (response.data == null)  // Changed from !response.data to response.data == null
+
+
+            if (response.status == "error")
+            {
+                throw new Exception("Failed to retrieve supported wallets");
+            }
+
+            if (response.data == null) 
             {
                 throw new Exception("Response data is missing");
             }

@@ -11300,7 +11300,7 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_text: 'Current Version : 0.6'
+  m_text: 'Current Version : 0.7'
   m_isRightToLeft: 0
   m_fontAsset: {fileID: 11400000, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}
   m_sharedMaterial: {fileID: 2180264, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}
@@ -14292,7 +14292,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 0}
   m_AnchorMax: {x: 1, y: 1}
-  m_AnchoredPosition: {x: -23.12976, y: -19.546143}
+  m_AnchoredPosition: {x: -23.129639, y: -19.546143}
   m_SizeDelta: {x: -590.93, y: -183.435}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &876699354
@@ -19765,7 +19765,7 @@ MonoBehaviour:
   sendBtnOtp: {fileID: 425897273}
   sendBtnOtpTest: {fileID: 1236758656}
   verifyOtp: {fileID: 1788730982}
-  oktoApiKey: '9fdf3b67-f196-4849-8241-3d0d8bacea89 '
+  oktoApiKey: 
 --- !u!4 &1182207217
 Transform:
   m_ObjectHideFlags: 0
@@ -22794,7 +22794,6 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   chainList: {fileID: 1198805544}
-  dropDownLabel: {fileID: 2128535663}
   emvPanel: {fileID: 1337346724}
   evmRawTransaction: {fileID: 1877184108}
   address: {fileID: 2035202726}
@@ -23005,6 +23004,7 @@ MonoBehaviour:
   environment: {fileID: 991982067}
   clientPrivateKey: {fileID: 487738787}
   clientSWA: {fileID: 1866350615}
+  googleLogin: {fileID: 559360369}
 --- !u!1 &1337346724
 GameObject:
   m_ObjectHideFlags: 0
@@ -29961,9 +29961,9 @@ MonoBehaviour:
   m_OnClick:
     m_PersistentCalls:
       m_Calls:
-      - m_Target: {fileID: 559360369}
-        m_TargetAssemblyTypeName: Login, Assembly-CSharp
-        m_MethodName: OnLoginButtonClicked
+      - m_Target: {fileID: 1335282994}
+        m_TargetAssemblyTypeName: OktoSDK.OktoAuthExample, Assembly-CSharp
+        m_MethodName: OnCheckValidation
         m_Mode: 1
         m_Arguments:
           m_ObjectArgument: {fileID: 0}
@@ -33452,7 +33452,6 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   chainList: {fileID: 463601043}
-  dropDownLabel: {fileID: 1088750097}
   transferPanel: {fileID: 1026395988}
   transferTokenTransaction: {fileID: 1767127709}
   closeBtn: {fileID: 1190860749}
@@ -34575,7 +34574,6 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   chainList: {fileID: 536282564}
-  dropDownLabel: {fileID: 623768803}
   nftPanel: {fileID: 1688404862}
   nftTransaction: {fileID: 1158308637}
   closeBtn: {fileID: 561072458}
@@ -35292,7 +35290,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 0}
   m_AnchorMax: {x: 1, y: 1}
-  m_AnchoredPosition: {x: -23.12976, y: -19.546143}
+  m_AnchoredPosition: {x: -23.129639, y: -19.546143}
   m_SizeDelta: {x: -590.93, y: -183.435}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &2036928251

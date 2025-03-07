@@ -10,6 +10,11 @@ namespace OktoSDK
 
         public async Task<object> GetChains(OktoClient oc)
         {
+            if (oc == null)
+            {
+                ResponsePanel.SetResponse("You are not logged In!");
+                return "You are not logged In!";
+            }
 
             if (!oc.IsLoggedIn())
             {

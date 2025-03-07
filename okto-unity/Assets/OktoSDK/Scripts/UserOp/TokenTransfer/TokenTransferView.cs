@@ -53,7 +53,7 @@ namespace OktoSDK
             _instance.tokenAddress.text = string.Empty;
         }
 
-        public async Task<string> ExecuteSimpleTransaction(string receiptAddress, BigInteger amount, string network, string tokenAddress)
+        public async Task<string> ExecuteTokenTransfer(string receiptAddress, BigInteger amount, string network, string tokenAddress)
         {
             var transaction = new TokenTransferIntentParams
             {
@@ -78,6 +78,9 @@ namespace OktoSDK
             string txHashStr = JsonConvert.SerializeObject(txHash, Formatting.Indented);
 
             Debug.Log($"Transaction executed. Hash: {txHashStr}");
+
+            //clear all inputfield
+            OnClose();
 
             return txHashStr;
         }
@@ -177,7 +180,7 @@ namespace OktoSDK
 
             Debug.Log("parsedAmount " + parsedAmount);
 
-            string txHashStr = await ExecuteSimpleTransaction(receiptAddress.text, parsedAmount, network, tokenAddress.text);
+            string txHashStr = await ExecuteTokenTransfer(receiptAddress.text, parsedAmount, network, tokenAddress.text);
             Debug.Log($"Transaction executed. Hash: {txHashStr}");
 
             ResponsePanel.SetResponse(txHashStr);
@@ -233,51 +236,29 @@ namespace OktoSDK
         {
             // Execute UserOp
             JsonRpcResponse<ExecuteResult> txHash = await UserOpExecute.ExecuteUserOp(signedUserOp, signedUserOp.signature);
+            //clear all inputfield
+            OnClose();
             return txHash;
-        }
-
-        public static string ToHex(object value)
-        {
-            if (value is int intValue)
-            {
-                return $"0x{intValue:X}";
-            }
-            else if (value is BigInteger bigIntValue)
-            {
-                return $"0x{bigIntValue.ToString("X")}";
-            }
-            else if (value is string strValue)
-            {
-                if (BigInteger.TryParse(strValue, out BigInteger bigIntParsed))
-                {
-                    return $"0x{bigIntParsed.ToString("X")}";
-                }
-                else
-                {
-                    throw new ArgumentException($"Invalid string input: {strValue}. It must be a valid number.");
-                }
-            }
-            else
-            {
-                throw new ArgumentException($"Unsupported type: {value.GetType()}. Use int, BigInteger, or a valid numeric string.");
-            }
         }
 
         // Example usage method
         public async void TestTokenTransfer()
         {
+            string caip2Id = "eip155:137";
             try
             {
                 var transferParams = new TokenTransferIntentParams
                 {
+                    caip2Id = "eip155:137", // Target chain CAIP-2 ID
                     recipientWalletAddress = "0xEE54970770DFC6cA138D12e0D9Ccc7D20b899089",
-                    tokenAddress = "",  // Add actual token contract address
-                    amount = 1 // 1 token with 18 decimals
+                    tokenAddress = "",   // Token address ("" for native token)
+                    amount = 1000000000000000000  // Target chain CAIP-2 ID
                 };
 
-                Debug.Log("Starting TestTokenTransfer");
-                string txHashStr = await ExecuteSimpleTransaction(transferParams.recipientWalletAddress, transferParams.amount, "eip155:137", transferParams.tokenAddress);
+                string txHashStr = await ExecuteTokenTransfer(transferParams.recipientWalletAddress, transferParams.amount, caip2Id, transferParams.tokenAddress);
+             
                 Debug.Log($"Transaction executed. Hash: {txHashStr}");
+                Debug.Log("Starting TestTokenTransfer");
 
                 ResponsePanel.SetResponse(txHashStr);
             }

@@ -7,8 +7,8 @@ namespace OktoSDK
     {
         public string from { get; set; }
         public string to { get; set; }
-        public string data { get; set; } 
-        public string value { get; set; } 
+        public string data { get; set; }
+        public string value { get; set; }
     }
 
     public class TokenTransferIntentParams

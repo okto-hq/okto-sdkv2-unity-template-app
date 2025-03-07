@@ -9,6 +9,12 @@ namespace OktoSDK
     {
         public async Task<object> GetTokens(OktoClient oc)
         {
+            if (oc == null)
+            {
+                ResponsePanel.SetResponse("You are not logged In!");
+                return "You are not logged In!";
+            }
+
             if (!oc.IsLoggedIn())
             {
                 ResponsePanel.SetResponse("You are not logged In!");

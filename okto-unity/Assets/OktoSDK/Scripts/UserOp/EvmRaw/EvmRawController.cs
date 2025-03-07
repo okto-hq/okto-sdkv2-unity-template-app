@@ -62,14 +62,14 @@ namespace OktoSDK
         }
 
         // Step 1: Create Transaction
-        public Transaction CreateTransaction(string from, string to, string value, string data = "0x00")
+        public Transaction CreateTransaction(string from, string to, string value, string data = "0x")
         {
             return new Transaction
             {
                 from = from,
                 to = to,
                 data = data,
-                value = value
+                value = value,
             };
         }
 
