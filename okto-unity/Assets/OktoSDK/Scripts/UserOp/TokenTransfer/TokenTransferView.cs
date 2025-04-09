@@ -63,21 +63,21 @@ namespace OktoSDK
                 caip2Id = network
             };
 
-            Debug.Log($"Generated transaction: {JsonConvert.SerializeObject(transaction, Formatting.Indented)}");
+            CustomLogger.Log($"Generated transaction: {JsonConvert.SerializeObject(transaction, Formatting.Indented)}");
 
             userOp = await CreateUserOp(transaction);
             string userOpStr = JsonConvert.SerializeObject(userOp, Formatting.Indented);
-            Debug.Log($"UserOp created: {JsonConvert.SerializeObject(userOp, Formatting.Indented)}");
+            CustomLogger.Log($"UserOp created: {JsonConvert.SerializeObject(userOp, Formatting.Indented)}");
 
 
             userOp = SignUserOp(userOp, network);
             userOpStr = JsonConvert.SerializeObject(userOp, Formatting.Indented);
-            Debug.Log($"UserOp Signed: {JsonConvert.SerializeObject(userOp, Formatting.Indented)}");
+            CustomLogger.Log($"UserOp Signed: {JsonConvert.SerializeObject(userOp, Formatting.Indented)}");
 
             JsonRpcResponse<ExecuteResult> txHash = await ExecuteUserOp(userOp);
             string txHashStr = JsonConvert.SerializeObject(txHash, Formatting.Indented);
 
-            Debug.Log($"Transaction executed. Hash: {txHashStr}");
+            CustomLogger.Log($"Transaction executed. Hash: {txHashStr}");
 
             //clear all inputfield
             OnClose();
@@ -124,7 +124,7 @@ namespace OktoSDK
             userOp = await CreateUserOp(transaction);
             string userOpStr = JsonConvert.SerializeObject(userOp, Formatting.Indented);
             ResponsePanel.SetResponse(userOpStr);
-            Debug.Log($"UserOp created: {JsonConvert.SerializeObject(userOp, Formatting.Indented)}");
+            CustomLogger.Log($"UserOp created: {JsonConvert.SerializeObject(userOp, Formatting.Indented)}");
             if (userOp != null)
             {
                 signAndExecuteBtn.gameObject.SetActive(true);
@@ -136,7 +136,7 @@ namespace OktoSDK
             Loader.ShowLoader();
 
             userOp = SignUserOp(userOp, network);
-            Debug.Log($"UserOp Signed: {JsonConvert.SerializeObject(userOp, Formatting.Indented)}");
+            CustomLogger.Log($"UserOp Signed: {JsonConvert.SerializeObject(userOp, Formatting.Indented)}");
             JsonRpcResponse<ExecuteResult> txHash = await ExecuteUserOp(userOp);
             string txHashStr = JsonConvert.SerializeObject(txHash, Formatting.Indented);
             ResponsePanel.SetResponse(txHashStr);
@@ -147,7 +147,7 @@ namespace OktoSDK
             JsonRpcResponse<ExecuteResult> txHash = await ExecuteUserOp(userOp);
             string txHashStr = JsonConvert.SerializeObject(txHash, Formatting.Indented);
 
-            Debug.Log($"Transaction executed. Hash: {txHashStr}");
+            CustomLogger.Log($"Transaction executed. Hash: {txHashStr}");
 
             ResponsePanel.SetResponse(txHashStr);
         }
@@ -178,10 +178,10 @@ namespace OktoSDK
                 }
             }
 
-            Debug.Log("parsedAmount " + parsedAmount);
+            CustomLogger.Log("parsedAmount " + parsedAmount);
 
             string txHashStr = await ExecuteTokenTransfer(receiptAddress.text, parsedAmount, network, tokenAddress.text);
-            Debug.Log($"Transaction executed. Hash: {txHashStr}");
+            CustomLogger.Log($"Transaction executed. Hash: {txHashStr}");
 
             ResponsePanel.SetResponse(txHashStr);
         }
@@ -191,10 +191,10 @@ namespace OktoSDK
             var nonce = Guid.NewGuid();
             string guidString = nonce.ToString("N");
 
-            Debug.Log($"Generated nonce : {nonce}");
+            CustomLogger.Log($"Generated nonce : {nonce}");
 
-            Debug.Log("Step 1: Creating UserOp");
-            Debug.Log("Sessipn.PrivateKey" + OktoAuthExample.GetSession().SessionPrivKey);
+            CustomLogger.Log("Step 1: Creating UserOp");
+            CustomLogger.Log("Sessipn.PrivateKey" + OktoAuthExample.GetSession().SessionPrivKey);
 
 
             // Create UserOp
@@ -257,14 +257,14 @@ namespace OktoSDK
 
                 string txHashStr = await ExecuteTokenTransfer(transferParams.recipientWalletAddress, transferParams.amount, caip2Id, transferParams.tokenAddress);
              
-                Debug.Log($"Transaction executed. Hash: {txHashStr}");
-                Debug.Log("Starting TestTokenTransfer");
+                CustomLogger.Log($"Transaction executed. Hash: {txHashStr}");
+                CustomLogger.Log("Starting TestTokenTransfer");
 
                 ResponsePanel.SetResponse(txHashStr);
             }
             catch (Exception ex)
             {
-                Debug.LogError($"Error in TestTokenTransfer: {ex.Message}");
+                CustomLogger.LogError($"Error in TestTokenTransfer: {ex.Message}");
             }
         }
 

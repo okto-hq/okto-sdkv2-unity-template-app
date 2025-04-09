@@ -64,7 +64,7 @@ namespace OktoSDK
 
         public async Task<string> ExecuteNFTTransaction(string recipientWalletAddress,
             string collectionAddress,
-            string nftId, int amount, string type, string network)
+            string nftId, BigInteger amount, string type, string network)
         {
             var data = new NFTTransferIntentParams
             {
@@ -78,10 +78,10 @@ namespace OktoSDK
 
             userOp = await CreateUserOp(data);
             string userOpStr = JsonConvert.SerializeObject(userOp, Formatting.Indented);
-            Debug.Log($"UserOp created: {JsonConvert.SerializeObject(userOp, Formatting.Indented)}");
+            CustomLogger.Log($"UserOp created: {JsonConvert.SerializeObject(userOp, Formatting.Indented)}");
 
             userOp = SignUserOp(userOp);
-            Debug.Log($"UserOp Signed: {JsonConvert.SerializeObject(userOp, Formatting.Indented)}");
+            CustomLogger.Log($"UserOp Signed: {JsonConvert.SerializeObject(userOp, Formatting.Indented)}");
 
             JsonRpcResponse<ExecuteResult> txHash = await ExecuteUserOp(userOp);
             string txHashStr = JsonConvert.SerializeObject(txHash, Formatting.Indented);
@@ -137,7 +137,7 @@ namespace OktoSDK
                 }
             }
 
-            Debug.Log("parsedAmount " + parsedAmount);
+            CustomLogger.Log("parsedAmount " + parsedAmount);
             var transferParams = new NFTTransferIntentParams
             {
                 caip2Id = network,
@@ -151,7 +151,7 @@ namespace OktoSDK
             userOp = await CreateUserOp(transferParams);
             string userOpStr = JsonConvert.SerializeObject(userOp, Formatting.Indented);
             ResponsePanel.SetResponse(userOpStr);
-            Debug.Log($"UserOp created: {JsonConvert.SerializeObject(userOp, Formatting.Indented)}");
+            CustomLogger.Log($"UserOp created: {JsonConvert.SerializeObject(userOp, Formatting.Indented)}");
             if (userOp != null)
             {
                 signAndExecuteBtn.gameObject.SetActive(true);
@@ -164,7 +164,7 @@ namespace OktoSDK
             Loader.ShowLoader();
 
             userOp = SignUserOp(userOp);
-            Debug.Log($"UserOp Signed: {JsonConvert.SerializeObject(userOp, Formatting.Indented)}");
+            CustomLogger.Log($"UserOp Signed: {JsonConvert.SerializeObject(userOp, Formatting.Indented)}");
             JsonRpcResponse<ExecuteResult> txHash = await ExecuteUserOp(userOp);
             string txHashStr = JsonConvert.SerializeObject(txHash, Formatting.Indented);
             ResponsePanel.SetResponse(txHashStr);
@@ -211,22 +211,22 @@ namespace OktoSDK
                 return;
             }
 
-            int parsedAmount;
-            if (int.TryParse(amount.text, out parsedAmount))
-            {
-                if (parsedAmount <= 0)
-                {
-                    ResponsePanel.SetResponse("Enter valid amount");
-                    return;
-                }
-            }
+            //int parsedAmount;
+            //if (int.TryParse(amount.text, out parsedAmount))
+            //{
+            //    if (parsedAmount <= 0)
+            //    {
+            //        ResponsePanel.SetResponse("Enter valid amount");
+            //        return;
+            //    }
+            //}
 
-            int amountParsed;
-            if (int.TryParse(amount.text, out amountParsed))
+            BigInteger amountParsed;
+            if (BigInteger.TryParse(amount.text, out amountParsed))
             {
                 if (amountParsed <= 0)
                 {
-                    Debug.LogError("Value is required");
+                    CustomLogger.LogError("Value is required");
                     return;
                 }
             }
@@ -241,9 +241,9 @@ namespace OktoSDK
             var nonce = Guid.NewGuid();
             string guidString = nonce.ToString("N");
 
-            Debug.Log($"Generated nonce : {nonce}");
+            CustomLogger.Log($"Generated nonce : {nonce}");
 
-            Debug.Log("Step 1: Creating UserOp");
+            CustomLogger.Log("Step 1: Creating UserOp");
             // Create UserOp
             var userOp = nftTransfer.CreateUserOp(
                 userSWA: OktoAuthExample.GetSession().UserSWA,
@@ -311,9 +311,9 @@ namespace OktoSDK
                 transferParams.nftType,
                 network);
 
-            Debug.Log("Starting TestTokenTransfer");
+            CustomLogger.Log("Starting TestTokenTransfer");
 
-            Debug.Log($"Transaction executed. Hash: {txHashStr}");
+            CustomLogger.Log($"Transaction executed. Hash: {txHashStr}");
             ResponsePanel.SetResponse(txHashStr);
         }
     }

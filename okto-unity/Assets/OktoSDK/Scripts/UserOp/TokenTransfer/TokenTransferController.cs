@@ -106,7 +106,7 @@ namespace OktoSDK
                 Formatting = Formatting.None
             });
 
-            Debug.Log($"Transaction JSON: {transactionJson}");
+            CustomLogger.Log($"Transaction JSON: {transactionJson}");
 
 
             byte[] encodedJobParameters = encoder.EncodeParameters(
@@ -198,7 +198,7 @@ namespace OktoSDK
             byte[] nonceBytes = HexToByteArray(cleanNonce.PadLeft(64, '0'));
             BigInteger jobId = new BigInteger(nonceBytes.Reverse().ToArray(), isUnsigned: true);
 
-            Debug.Log($"Using jobId: {jobId}");
+            CustomLogger.Log($"Using jobId: {jobId}");
 
             // Encode initiateJob parameters
             byte[] initiateJobParamsData = encoder.EncodeParameters(

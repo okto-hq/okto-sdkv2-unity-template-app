@@ -88,8 +88,8 @@ namespace OktoSDK
         // Step 2: Encode Job Parameters
         public byte[] EncodeJobParameters(NFTTransferIntentParams transaction)
         {
-            Debug.Log(JsonConvert.SerializeObject(transaction, Formatting.Indented));
-            BigInteger bigNumber = transaction.amount;
+            CustomLogger.Log(JsonConvert.SerializeObject(transaction, Formatting.Indented));
+            //BigInteger bigNumber = transaction.amount;
             byte[] encodedJobParameters = encoder.EncodeParameters(
                 new[] {
                 new Parameter("string", "caip2Id", 1),
@@ -99,7 +99,7 @@ namespace OktoSDK
                 new Parameter("string", "nftType", 5),
                 new Parameter("uint", "amount", 6)
                 },
-                new object[] { transaction.caip2Id, transaction.nftId, transaction.recipientWalletAddress, transaction.collectionAddress, transaction.nftType, bigNumber }
+                new object[] { transaction.caip2Id, transaction.nftId, transaction.recipientWalletAddress, transaction.collectionAddress, transaction.nftType, transaction.amount }
             );
 
             return AddOffset(encodedJobParameters);
