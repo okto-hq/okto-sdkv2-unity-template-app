@@ -76,17 +76,17 @@ namespace OktoSDK
 
             userOp = await CreateUserOp(transaction);
             string userOpStr = JsonConvert.SerializeObject(userOp, Formatting.Indented);
-            Debug.Log($"UserOp created: {JsonConvert.SerializeObject(userOp, Formatting.Indented)}");
+            CustomLogger.Log($"UserOp created: {JsonConvert.SerializeObject(userOp, Formatting.Indented)}");
 
 
             userOp = SignUserOp(userOp, network);
             userOpStr = JsonConvert.SerializeObject(userOp, Formatting.Indented);
-            Debug.Log($"UserOp Signed: {JsonConvert.SerializeObject(userOp, Formatting.Indented)}");
+            CustomLogger.Log($"UserOp Signed: {JsonConvert.SerializeObject(userOp, Formatting.Indented)}");
 
             JsonRpcResponse<ExecuteResult> txHash = await ExecuteUserOp(userOp);
             string txHashStr = JsonConvert.SerializeObject(txHash, Formatting.Indented);
 
-            Debug.Log($"Transaction executed. Hash: {txHashStr}");
+            CustomLogger.Log($"Transaction executed. Hash: {txHashStr}");
 
             //clear all inputfield
             OnClose();
@@ -139,7 +139,7 @@ namespace OktoSDK
             userOp = await CreateUserOp(transaction);
             string userOpStr = JsonConvert.SerializeObject(userOp, Formatting.Indented);
             ResponsePanel.SetResponse(userOpStr);
-            Debug.Log($"UserOp created: {JsonConvert.SerializeObject(userOp, Formatting.Indented)}");
+            CustomLogger.Log($"UserOp created: {JsonConvert.SerializeObject(userOp, Formatting.Indented)}");
         }
 
         public void OnUserSign()
@@ -149,7 +149,7 @@ namespace OktoSDK
             userOp = SignUserOp(userOp, network);
             string userOpStr = JsonConvert.SerializeObject(userOp, Formatting.Indented);
             ResponsePanel.SetResponse(userOpStr);
-            Debug.Log($"UserOp Signed: {JsonConvert.SerializeObject(userOp, Formatting.Indented)}");
+            CustomLogger.Log($"UserOp Signed: {JsonConvert.SerializeObject(userOp, Formatting.Indented)}");
         }
         public async void OnUserOPExecute()
         {
@@ -158,7 +158,7 @@ namespace OktoSDK
             JsonRpcResponse<ExecuteResult> txHash = await ExecuteUserOp(userOp);
             string txHashStr = JsonConvert.SerializeObject(txHash, Formatting.Indented);
 
-            Debug.Log($"Transaction executed. Hash: {txHashStr}");
+            CustomLogger.Log($"Transaction executed. Hash: {txHashStr}");
 
             ResponsePanel.SetResponse(txHashStr);
         }
@@ -187,7 +187,7 @@ namespace OktoSDK
             }
 
 
-            Debug.Log("Transaction button clicked");
+            CustomLogger.Log("Transaction button clicked");
             string txHashStr = await ExecuteEvmRawTransaction(network, sender.text, receipent.text, value.text, data.text);
             ResponsePanel.SetResponse(txHashStr);
 
@@ -201,9 +201,9 @@ namespace OktoSDK
             var nonce = Guid.NewGuid();
             string guidString = nonce.ToString("N");
 
-            Debug.Log($"Generated fresh nonce : {nonce}");
-            Debug.Log($"oktoAuthExample._oktoClient.ClientSWA: {OktoAuthExample.getOktoClient().ClientSWA}");
-            Debug.Log("Step 1: Creating UserOp");
+            CustomLogger.Log($"Generated fresh nonce : {nonce}");
+            CustomLogger.Log($"oktoAuthExample._oktoClient.ClientSWA: {OktoAuthExample.getOktoClient().ClientSWA}");
+            CustomLogger.Log("Step 1: Creating UserOp");
             // Create UserOp
             var userOp = unityCallDataEncoder.CreateUserOp(
                 userSWA: OktoAuthExample.getOktoClient()._sessionConfig.UserSWA,
@@ -219,7 +219,7 @@ namespace OktoSDK
             );
 
             string txHashStr = JsonConvert.SerializeObject(transaction, Formatting.Indented);
-            Debug.Log($"NFT transfer transaction executed. Hash: {txHashStr}");
+            CustomLogger.Log($"NFT transfer transaction executed. Hash: {txHashStr}");
             return userOp;
         }
 
@@ -299,14 +299,14 @@ namespace OktoSDK
                     transferParams.value,
                     transferParams.data);
 
-                Debug.Log($"Transaction executed. Hash: {txHashStr}");
-                Debug.Log("Starting TestTokenTransfer");
+                CustomLogger.Log($"Transaction executed. Hash: {txHashStr}");
+                CustomLogger.Log("Starting TestTokenTransfer");
 
                 ResponsePanel.SetResponse(txHashStr);
             }
             catch (Exception ex)
             {
-                Debug.LogError($"Error in TestTokenTransfer: {ex.Message}");
+                CustomLogger.LogError($"Error in TestTokenTransfer: {ex.Message}");
             }
         }
 

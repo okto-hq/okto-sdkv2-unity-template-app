@@ -94,7 +94,7 @@ namespace OktoSDK
             }
             catch (Exception e)
             {
-                Debug.Log("execption : " + e.Message);
+                CustomLogger.Log("execption : " + e.Message);
             }
 
         }
@@ -118,7 +118,7 @@ namespace OktoSDK
             }
             catch (Exception e)
             {
-                Debug.Log("execption : " + e.Message);
+                CustomLogger.Log("execption : " + e.Message);
             }
 
         }

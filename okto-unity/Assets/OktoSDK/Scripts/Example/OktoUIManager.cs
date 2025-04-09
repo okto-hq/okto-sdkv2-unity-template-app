@@ -32,7 +32,7 @@ using Newtonsoft.Json;
             [System.Serializable]
             public class WalletListWrapper
             {
-                public List<OktoSDK.Wallet> wallets;
+                public List<Wallet> wallets;
             }
 
             // Button click handlers
@@ -160,7 +160,7 @@ using Newtonsoft.Json;
             private void DisplayError(string operation, System.Exception e)
             {
                 string message = $"{operation} failed: {e.Message}";
-                Debug.LogError(message);
+                Debug.Log(message);
                 if (resultText != null)
                 {
                     ResponsePanel.SetResponse(message);

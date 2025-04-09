@@ -1,7 +1,8 @@
 using TMPro;
 using UnityEngine;
 
-
+namespace OktoSDK
+{
     //This is a utility class to copy responses from response panel
     public class CopyPasteSystem : MonoBehaviour
     {
@@ -9,7 +10,7 @@ using UnityEngine;
 
         public void CopyToClipboard()
         {
-            Debug.Log("inputField.text " + inputField.text);
+            CustomLogger.Log("inputField.text " + inputField.text);
             TextEditor textEditor = new TextEditor();
             textEditor.text = inputField.text;
             textEditor.SelectAll();
@@ -24,3 +25,4 @@ using UnityEngine;
             inputField.text = textEditor.text;
         }
     }
+}

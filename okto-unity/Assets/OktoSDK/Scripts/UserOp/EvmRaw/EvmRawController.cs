@@ -127,7 +127,7 @@ namespace OktoSDK
                 transactions = new[] { transactionBytes }
             };
 
-            Debug.Log($"Generated jobParamsStruct: {JsonConvert.SerializeObject(jobParamsStruct, Formatting.Indented)}");
+            CustomLogger.Log($"Generated jobParamsStruct: {JsonConvert.SerializeObject(jobParamsStruct, Formatting.Indented)}");
 
             byte[] encodedJobParameters = encoder.EncodeParameters(
                 new[] {
@@ -203,7 +203,7 @@ namespace OktoSDK
                 byte[] nonceBytes = HexToByteArray(cleanNonce.PadLeft(64, '0'));
                 BigInteger jobId = new BigInteger(nonceBytes.Reverse().ToArray(), isUnsigned: true);
 
-                Debug.Log($"Using jobId: {jobId}");
+                CustomLogger.Log($"Using jobId: {jobId}");
 
                 // Encode initiateJob parameters
                 byte[] initiateJobParamsData = encoder.EncodeParameters(
@@ -241,8 +241,8 @@ namespace OktoSDK
             }
             catch (Exception ex)
             {
-                Debug.LogError($"Error generating calldata: {ex.Message}");
-                Debug.LogError($"Nonce used: {nonce}");
+                CustomLogger.LogError($"Error generating calldata: {ex.Message}");
+                CustomLogger.LogError($"Nonce used: {nonce}");
                 throw;
             }
         }

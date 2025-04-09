@@ -87,7 +87,7 @@ namespace OktoSDK
             }
             catch (Exception e)
             {
-                Debug.Log("execption : " + e.Message);
+                CustomLogger.Log("execption : " + e.Message);
             }
         }
 
@@ -107,7 +107,7 @@ namespace OktoSDK
                 {
                     if (walletList[i].networkName.ToLower().Equals(chainList.options[chainList.value].text.ToLower()))
                     {
-                        Debug.Log("SetCurrentNetwork " + walletList[i].capId);
+                        CustomLogger.Log("SetCurrentNetwork " + walletList[i].capId);
                         NftTransferView.SetNetwork(walletList[i].capId);
                         break;
                     }
@@ -118,14 +118,14 @@ namespace OktoSDK
                     if (networkList[i].caipId.Equals(NftTransferView.GetNetwork()))
                     {
                         NftTransferController.SetCurrentChain(networkList[i]);
-                        Debug.Log("SetCurrent_Chain " + JsonConvert.SerializeObject(networkList[i]));
+                        CustomLogger.Log("SetCurrent_Chain " + JsonConvert.SerializeObject(networkList[i]));
                         break;
                     }
                 }
             }
             catch (Exception e)
             {
-                Debug.Log("execption : " + e.Message);
+                CustomLogger.Log("execption : " + e.Message);
             }
 
             Loader.DisableLoader();

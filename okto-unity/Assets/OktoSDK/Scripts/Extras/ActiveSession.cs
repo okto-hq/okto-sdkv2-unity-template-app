@@ -36,8 +36,8 @@ namespace OktoSDK
             }
 
 
-            string jsonString = JsonConvert.SerializeObject(OktoAuthExample.GetSession(), Formatting.Indented);
-            Debug.Log("Active Session : " + jsonString);
+            string jsonString = JsonConvert.SerializeObject(OktoAuthExample.getOktoClient()._userDetails, Formatting.Indented);
+            CustomLogger.Log("Active Session : " + jsonString);
             if (string.IsNullOrEmpty(jsonString) || jsonString.Equals("null"))
             {
                 ResponsePanel.SetResponse("No Active Session Exists!");

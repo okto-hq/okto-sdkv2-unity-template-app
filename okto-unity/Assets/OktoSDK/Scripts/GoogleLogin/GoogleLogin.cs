@@ -14,7 +14,7 @@ namespace OktoSDK
         private GoogleSignInConfiguration configuration;
 #endif
 #if GOOGLE_LOGIN
-        [SerializeField] private String webClientId;
+         private String webClientId;
 #endif
 
         void InitializePlayGamesLogin()
@@ -23,34 +23,33 @@ namespace OktoSDK
 
             configuration = new GoogleSignInConfiguration
             {
-                WebClientId = webClientId,
+                WebClientId = Environment.GetGoogleWebClient(),//webClientId,
                 RequestEmail = true,
                 RequestIdToken = true,
             };
 
 #else
-            Debug.Log("Google Sign-In is not enabled. Please add GOOGLE_LOGIN to scripting define symbols.");
+            CustomLogger.Log("Google Sign-In is not enabled. Please add GOOGLE_LOGIN to scripting define symbols.");
 
 #endif
         }
         private static HttpClient httpClient;
 
-        private void OnEnable()
+        private void Start()
         {
+            CustomLogger.Log("cliendId "+ Environment.GetGoogleWebClient());
             InitializePlayGamesLogin();
         }
 
-        public bool loginManually;
 
         public async void OnLoginButtonClicked()
         {
             Loader.ShowLoader();
-            if (loginManually)
+            if (Environment.GetManuallyLogin())
             {
                 OktoAuthExample.OnLogin();
                 return;
             }
-
 
             string authenticationData;
             Exception error;
@@ -58,16 +57,18 @@ namespace OktoSDK
 
             if (error != null)
             {
-                Debug.LogError($"Login failed with error: {error.Message}");
+                CustomLogger.LogError($"Login failed with error: {error.Message}");
             }
             else
             {
-                Debug.Log("Login successful!");
-                Debug.Log("loginDone " + authenticationData);
+                CustomLogger.Log("Login successful!");
+                CustomLogger.Log("loginDone " + authenticationData);
 
             }
 
         }
+
+        public GoogleSignInUser user;
 
         public async Task<(string result, Exception error)> LoginGoogle()
         {
@@ -76,12 +77,12 @@ namespace OktoSDK
 
             try
             {
-                GoogleSignInUser user = await GoogleSignIn.DefaultInstance.SignIn();
+                user = await GoogleSignIn.DefaultInstance.SignIn();
                 if (user != null)
                 {
-                    Debug.Log($"Signed in successfully! Welcome: {user.DisplayName}");
-                    Debug.Log($"ID Token: {user.IdToken}");
-                    OktoAuthExample.LoginWithGoogle(user.IdToken, "google");
+                    CustomLogger.Log($"Signed in successfully! Welcome: {user.DisplayName}");
+                    CustomLogger.Log($"ID Token: {user.IdToken}");
+                    OktoAuthExample.Authenticate(user.IdToken,AuthProvider.GOOGLE);
 
                     // Use the ID token to authenticate with your backend
                     return (user.IdToken, null); // Returns (AuthDetails, Exception)
@@ -93,7 +94,7 @@ namespace OktoSDK
                 {
                     if (innerException is GoogleSignIn.SignInException signInError)
                     {
-                        Debug.LogError($"Google Sign-In Error: {signInError.Status} - {signInError.Message}");
+                        CustomLogger.LogError($"Google Sign-In Error: {signInError.Status} - {signInError.Message}");
                         return (null, signInError);
                     }
                 }
@@ -101,14 +102,14 @@ namespace OktoSDK
             catch (Exception ex)
             {
                 Loader.DisableLoader();
-                Debug.LogError($"Unexpected Error: {ex.Message}");
+                CustomLogger.LogError($"Unexpected Error: {ex.Message}");
                 return (null, ex);
             }
 
-            Debug.Log("Sign-In was canceled.");
+            CustomLogger.Log("Sign-In was canceled.");
             return (null, null); // Return null if sign-in is canceled
 #else
-            Debug.LogWarning("Google Sign-In is not enabled. Please add GOOGLE_LOGIN to scripting define symbols.");
+            CustomLogger.LogWarning("Google Sign-In is not enabled. Please add GOOGLE_LOGIN to scripting define symbols.");
             return (null, null);
 #endif
         }

@@ -1,26 +1,30 @@
 using UnityEngine;
 
 
-//It handles loader mechanism
-public class Loader : MonoBehaviour
+namespace OktoSDK
 {
-    [SerializeField]
-    private GameObject loader;
-
-    public static Loader _instance;
-
-    private void OnEnable()
+    //It handles loader mechanism
+    public class Loader : MonoBehaviour
     {
-        _instance = this;
-    }
+        [SerializeField]
+        private GameObject loader;
 
-    public static void ShowLoader()
-    {
-        _instance.loader.SetActive(true);
-    }
+        public static Loader _instance;
 
-    public static void DisableLoader()
-    {
-        _instance.loader.SetActive(false);
+        private void OnEnable()
+        {
+            _instance = this;
+        }
+
+        public static void ShowLoader()
+        {
+            CustomLogger.Log("Showing loader");
+            _instance.loader.SetActive(true);
+        }
+
+        public static void DisableLoader()
+        {
+            _instance.loader.SetActive(false);
+        }
     }
 }

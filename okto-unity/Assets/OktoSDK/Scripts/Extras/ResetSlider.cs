@@ -1,14 +1,17 @@
 using UnityEngine;
 using UnityEngine.UI;
 
-//It resets scrollbar attched to Response Panel to it's default value
-public class ResetSlider : MonoBehaviour
+namespace OktoSDK
 {
-    [SerializeField]
-    private Scrollbar scrollBar;
-
-    private void OnEnable()
+    //It resets scrollbar attched to Response Panel to it's default value
+    public class ResetSlider : MonoBehaviour
     {
-        scrollBar.value = 1;
+        [SerializeField]
+        private Scrollbar scrollBar;
+
+        private void OnEnable()
+        {
+            scrollBar.value = 1;
+        }
     }
 }

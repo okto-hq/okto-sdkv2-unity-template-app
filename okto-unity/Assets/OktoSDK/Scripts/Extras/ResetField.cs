@@ -1,16 +1,19 @@
 using TMPro;
 using UnityEngine;
 
-public class ResetField : MonoBehaviour
+namespace OktoSDK
 {
-    [SerializeField]
-    private TMP_InputField[] inputFields;
-
-    private void OnEnable()
+    public class ResetField : MonoBehaviour
     {
-        for (int i = 0; i < inputFields.Length; i++)
+        [SerializeField]
+        private TMP_InputField[] inputFields;
+
+        private void OnEnable()
         {
-            inputFields[i].text = string.Empty;
+            for (int i = 0; i < inputFields.Length; i++)
+            {
+                inputFields[i].text = string.Empty;
+            }
         }
     }
 }

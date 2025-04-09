@@ -1,197 +1,376 @@
-using System;
-using System.Collections.Generic;
-using System.Net.Http;
 using System.Text;
-using System.Threading.Tasks;
-using Newtonsoft.Json;
-using TMPro;
 using UnityEngine;
-using UnityEngine.UI;
+using UnityEngine.Networking;
+using Nethereum.Signer;
+using Newtonsoft.Json;
+using System.Threading.Tasks;
+using System.Collections.Generic;
+using System;
 
-//script for whatsap authenticate 
-//code referred from v1,need to optimize furher more
 namespace OktoSDK
 {
     public class WhatsAppAuthentication : MonoBehaviour
     {
-        [SerializeField]
-        private TMP_InputField phoneInputField;
+        public string latestToken;
 
-        [SerializeField]
-        private TMP_InputField countryCodeInputField;
-
-        [SerializeField]
-        private TMP_InputField otpInputFieldPhone;
-
-        [SerializeField]
-        private Button sendBtnOtp;
-
-        [SerializeField]
-        private Button sendBtnOtpTest;
-
-        [SerializeField]
-        private Button verifyOtp;
-
-        [SerializeField]
-        private string oktoApiKey;
-
-        private string phoneToken;
-        private static HttpClient httpClient;
-
-        private void OnEnable()
+        public async Task<WhatsAppApiResponse> SendPhoneOtpAsync(string phoneNumber, string countryShortName = "IN")
         {
-            sendBtnOtp.onClick.AddListener(SendPhoneOtp);
-            verifyOtp.onClick.AddListener(VerifyPhoneOtp);
+            CustomLogger.Log("====SendPhoneOtpAsync===");
+
+            string apiUrl = OktoAuthExample.getOktoClient().Env.BffBaseUrl + "/api/oc/v1/authenticate/whatsapp";
+            long timestamp = DateTimeOffset.UtcNow.ToUnixTimeMilliseconds();
+
+            var requestBody = new SendOtpData(phoneNumber, countryShortName, OktoAuthExample.getOktoClientConfig().ClientSWA, timestamp);
+            string jsonData = JsonConvert.SerializeObject(requestBody);
+            string signature = SignMessage(jsonData);
+
+            var req = new SendOtpRequest(phoneNumber, countryShortName, OktoAuthExample.getOktoClientConfig().ClientSWA, timestamp, signature);
+
+            CustomLogger.Log(JsonConvert.SerializeObject(req));
+
+            var response = await MakeApiCall<WhatsAppApiResponse>(apiUrl, req);
+            return response;
         }
 
-        private void OnDisable()
+        public async Task<WhatsAppApiResponse> ResendPhoneOtpAsync(string phoneNumber, string token , string countryShortName = "IN")
         {
-            sendBtnOtp.onClick.RemoveListener(SendPhoneOtp);
-            verifyOtp.onClick.RemoveListener(VerifyPhoneOtp);
+            string apiUrl = OktoAuthExample.getOktoClient().Env.BffBaseUrl + "/api/oc/v1/authenticate/whatsapp";
+            long timestamp = DateTimeOffset.UtcNow.ToUnixTimeMilliseconds();
+
+            var requestBody = new ResendOtpData(phoneNumber, countryShortName, token, OktoAuthExample.getOktoClientConfig().ClientSWA, timestamp);
+            string jsonData = JsonConvert.SerializeObject(requestBody);
+            string signature = SignMessage(jsonData);
+
+            var req = new ResendOtpRequest(phoneNumber, countryShortName, token, OktoAuthExample.getOktoClientConfig().ClientSWA, timestamp, signature);
+
+            WhatsAppApiResponse response = await MakeApiCall<WhatsAppApiResponse>(apiUrl, req);
+            return response;
         }
 
-        private async void SendPhoneOtp()
+        public async Task<AuthResponse> VerifyPhoneOtpAsync(string phoneNumber, string otp, string token, string countryShortName = "IN")
         {
-            string phoneNumber = phoneInputField.text;
-            string countryCode = countryCodeInputField.text;
+            string apiUrl = OktoAuthExample.getOktoClient().Env.BffBaseUrl + "/api/oc/v1/authenticate/whatsapp/verify";
+            long timestamp = DateTimeOffset.UtcNow.ToUnixTimeMilliseconds();
 
-            if (string.IsNullOrEmpty(phoneNumber) || string.IsNullOrEmpty(countryCode))
-            {
-                ResponsePanel.SetResponse("Phone number and country code cannot be empty.");
-                return;
-            }
+            var requestBody = new VerifyOtpData(phoneNumber, countryShortName, otp, token, OktoAuthExample.getOktoClientConfig().ClientSWA, timestamp);
+            string jsonData = JsonConvert.SerializeObject(requestBody);
+            string signature = SignMessage(jsonData);
 
-            var (success, token, error) = await SendPhoneOtpAsync(phoneNumber, countryCode);
-            if (success)
-            {
-                phoneToken = token;
-                ResponsePanel.SetResponse("Phone OTP sent successfully!");
-                otpInputFieldPhone.gameObject.SetActive(true);
-            }
-            else
-            {
-                ResponsePanel.SetResponse($"Error: {error?.Message ?? "Failed to send phone OTP"}");
-            }
+            var req = new VerifyOtpRequest(phoneNumber, countryShortName, otp, token, OktoAuthExample.getOktoClientConfig().ClientSWA, timestamp, signature);
+
+            AuthResponse response = await MakeApiCall<AuthResponse>(apiUrl, req);
+            return response;
         }
 
-        private async void VerifyPhoneOtp()
+        private async Task<T> MakeApiCall<T>(string apiUrl, object requestBody) where T : class
         {
-            string phoneNumber = phoneInputField.text;
-            string countryCode = countryCodeInputField.text;
-            string otp = otpInputFieldPhone.text;
+            string jsonData = JsonConvert.SerializeObject(requestBody);
+            byte[] jsonToSend = Encoding.UTF8.GetBytes(jsonData);
 
-            if (string.IsNullOrEmpty(phoneNumber) || string.IsNullOrEmpty(countryCode) || string.IsNullOrEmpty(otp) || string.IsNullOrEmpty(phoneToken))
-            {
-                ResponsePanel.SetResponse("All fields must be filled in for verification.");
-                return;
-            }
+            CustomLogger.Log($"API Request to {apiUrl}: {jsonData}");
 
-            var (success, authToken, error) = await VerifyPhoneOtpAsync(phoneNumber, countryCode, otp, phoneToken);
-            if (success)
+            using (UnityWebRequest request = new UnityWebRequest(apiUrl, "POST"))
             {
-                ResponsePanel.SetResponse("Phone OTP verified successfully!");
-                OktoAuthExample.LoginWithGoogle(authToken, "google");
-            }
-            else
-            {
-                ResponsePanel.SetResponse($"Error: {error?.Message ?? "Failed to verify phone OTP"}");
-            }
-        }
+                request.uploadHandler = new UploadHandlerRaw(jsonToSend);
+                request.downloadHandler = new DownloadHandlerBuffer();
+                request.SetRequestHeader("Content-Type", "application/json");
 
-        public async Task<(bool success, string token, Exception error)> SendPhoneOtpAsync(string phoneNumber, string countryShortName)
-        {
-            var apiUrl = OktoAuthExample.getOktoClient().Env.BffBaseUrl + "/api/v1/authenticate/whatsapp";
-            var requestBody = new { phone_number = phoneNumber, country_short_name = countryShortName };
-
-            try
-            {
-                var response = await MakeApiCallAsync(apiUrl, requestBody);
-                if (response.success && response.data.TryGetValue("token", out var token))
+                var asyncOperation = request.SendWebRequest();
+                while (!asyncOperation.isDone)
                 {
-                    return (true, token.ToString(), null);
+                    await Task.Yield();
                 }
-                return (false, null, new Exception("Failed to send phone OTP"));
-            }
-            catch (Exception ex)
-            {
-                return (false, null, ex);
-            }
-        }
 
-        public async Task<(bool success, string authToken, Exception error)> VerifyPhoneOtpAsync(string phoneNumber, string countryShortName, string otp, string token)
-        {
-            var apiUrl = OktoAuthExample.getOktoClient().Env.BffBaseUrl + "/api/v1/authenticate/whatsapp/verify";
-            var requestBody = new { phone_number = phoneNumber, country_short_name = countryShortName, otp = otp, token = token };
+                string responseText = request.downloadHandler.text;
+                CustomLogger.Log($"Raw API Response: {responseText}");
 
-            try
-            {
-                var response = await MakeApiCallAsync(apiUrl, requestBody);
-                if (response.success && response.data.TryGetValue("auth_token", out var authToken))
+                if (request.result == UnityWebRequest.Result.Success)
                 {
-                    return (true, authToken.ToString(), null);
-                }
-                return (false, null, new Exception("Failed to verify phone OTP"));
-            }
-            catch (Exception ex)
-            {
-                return (false, null, ex);
-            }
-        }
-
-        private async Task<(bool success, Dictionary<string, object> data, Exception error)> MakeApiCallAsync(string apiUrl, object requestBody)
-        {
-            try
-            {
-                var jsonString = JsonConvert.SerializeObject(requestBody);
-                var jsonContent = new StringContent(jsonString, Encoding.UTF8, "application/json");
-
-                // Set headers
-                httpClient.DefaultRequestHeaders.Clear();
-                httpClient.DefaultRequestHeaders.Add("x-api-key", oktoApiKey);
-                httpClient.DefaultRequestHeaders.UserAgent.ParseAdd("Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/86.0.4240.198 Safari/537.36");
-                Debug.Log(apiUrl);
-                Debug.Log(requestBody);
-
-                var response = await httpClient.PostAsync(apiUrl, jsonContent);
-                var responseContent = await response.Content.ReadAsStringAsync();
-
-                Debug.Log(response);
-
-                // Check response status
-                if (response.IsSuccessStatusCode)
-                {
-                    try
+                    if (!string.IsNullOrEmpty(responseText))
                     {
-                        // Deserialize JSON response into a nested object
-                        var responseData = JsonConvert.DeserializeObject<Dictionary<string, object>>(responseContent);
-
-                        // Check the "status" field
-                        if (responseData != null &&
-                            responseData.TryGetValue("status", out var status) &&
-                            status.ToString() == "success")
+                        try
                         {
-                            // Check the "data" field
-                            if (responseData.TryGetValue("data", out var data) &&
-                                data is Newtonsoft.Json.Linq.JObject dataJObject)
+                            // Handle WhatsAppBffApiResponse specifically
+                            if (typeof(T) == typeof(WhatsAppApiResponse))
                             {
-                                // Convert "data" JObject to Dictionary<string, object>
-                                var dataDict = dataJObject.ToObject<Dictionary<string, object>>();
-                                return (true, dataDict, null);
+                                var whatsAppResponse = JsonConvert.DeserializeObject<WhatsAppBffApiResponse>(responseText);
+                                if (whatsAppResponse != null)
+                                {
+                                    if (whatsAppResponse.Status == "error" && whatsAppResponse.Error != null)
+                                    {
+                                        throw new Exception($"WhatsApp Error {whatsAppResponse.Error.Code}: {whatsAppResponse.Error.Details ?? whatsAppResponse.Error.Message}");
+                                    }
+
+                                    if (whatsAppResponse.Status == "success" && whatsAppResponse.Data != null)
+                                    {
+                                        return whatsAppResponse.Data as T;
+                                    }
+                                }
+                            }
+                            // Handle AuthResponseBff separately
+                            else if (typeof(T) == typeof(AuthResponse))
+                            {
+                                var authResponseBff = JsonConvert.DeserializeObject<AuthResponseBff>(responseText);
+                                if (authResponseBff != null)
+                                {
+                                    if (authResponseBff.Status == "error")
+                                    {
+                                        throw new Exception($"Auth Error: {ExtractErrorMessage(responseText)}");
+                                    }
+
+                                    if (authResponseBff.Status == "success" && authResponseBff.Data != null)
+                                    {
+                                        return authResponseBff.Data as T;
+                                    }
+                                }
                             }
                         }
-                    }
-                    catch (Exception ex)
-                    {
-                        return (false, null, new Exception("Error parsing API response: " + ex.Message));
+                        catch (Exception ex)
+                        {
+                            CustomLogger.Log($"Error parsing response: {ex.Message}");
+                            throw new Exception(ExtractErrorMessage(responseText));
+                        }
                     }
                 }
 
-                return (false, null, new Exception("Error in API response: " + responseContent));
-            }
-            catch (Exception ex)
-            {
-                return (false, null, ex);
+                throw new Exception(ExtractErrorMessage(responseText));
             }
         }
+
+
+        public string ExtractErrorMessage(string responseText)
+        {
+            try
+            {
+                // Deserialize the response to a dictionary
+                var errorResponse = JsonConvert.DeserializeObject<Dictionary<string, object>>(responseText);
+
+                // Check if the error object exists
+                if (errorResponse.ContainsKey("error") && errorResponse["error"] is Newtonsoft.Json.Linq.JObject errorObj)
+                {
+                    // Extract the details field from the error object
+                    string errorDetails = errorObj["details"]?.ToString();
+                    if (!string.IsNullOrEmpty(errorDetails))
+                    {
+                        return errorDetails;
+                    }
+                }
+
+                return "Failed";
+            }
+            catch (Exception)
+            {
+                return "Failed";
+            }
+        }
+
+
+        public static string SignMessage(string message)
+        {
+            string privateKey = OktoAuthExample.getOktoClientConfig().ClientPrivateKey;
+            var ethKey = new EthECKey(privateKey.StartsWith("0x") ? privateKey.Substring(2) : privateKey);
+            var signer = new EthereumMessageSigner();
+            string signature = signer.EncodeUTF8AndSign(message, ethKey);
+            return signature.StartsWith("0x") ? signature : "0x" + signature;
+        }
     }
+}
+
+[Serializable]
+public class WhatsAppBffApiResponse
+{
+    [JsonProperty("status")] public string Status { get; set; }
+    [JsonProperty("data")] public WhatsAppApiResponse Data { get; set; }
+    [JsonProperty("error")] public Error Error { get; set; }
+}
+
+[Serializable]
+public class WhatsAppApiResponse
+{
+    [JsonProperty("status")] public string Status { get; set; }
+    [JsonProperty("message")] public string Message { get; set; }
+    [JsonProperty("code")] public int Code { get; set; }
+    [JsonProperty("token")] public string Token { get; set; }
+    [JsonProperty("trace_id")] public string TraceId { get; set; }
+}
+
+[Serializable]
+public class Error
+{
+    [JsonProperty("code")] public int Code { get; set; }
+    [JsonProperty("errorCode")] public string ErrorCode { get; set; }
+    [JsonProperty("message")] public string Message { get; set; }
+    [JsonProperty("trace_id")] public string TraceId { get; set; }
+    [JsonProperty("details")] public string Details { get; set; }
+}
+
+
+[Serializable]
+public class SendOtpRequest
+{
+    [JsonProperty("data")]
+    public SendOtpData Data { get; set; }
+
+    [JsonProperty("client_signature")]
+    public string ClientSignature { get; set; }
+
+    [JsonProperty("type")]
+    public string Type { get; set; } = "ethsign";
+
+    public SendOtpRequest(string phone, string country, string swa, long time, string signature)
+    {
+        Data = new SendOtpData(phone, country, swa, time);
+        ClientSignature = signature;
+    }
+}
+
+[Serializable]
+public class SendOtpData
+{
+    [JsonProperty("whatsapp_number")]
+    public string WhatsappNumber { get; set; }
+
+    [JsonProperty("country_short_name")]
+    public string CountryShortName { get; set; }
+
+    [JsonProperty("client_swa")]
+    public string ClientSwa { get; set; }
+
+    [JsonProperty("timestamp")]
+    public long Timestamp { get; set; }
+
+    public SendOtpData(string phone, string country, string swa, long time)
+    {
+        WhatsappNumber = phone;
+        CountryShortName = country;
+        ClientSwa = swa;
+        Timestamp = time;
+    }
+}
+
+[Serializable]
+public class VerifyOtpRequest
+{
+    [JsonProperty("data")]
+    public VerifyOtpData Data { get; set; }
+
+    [JsonProperty("client_signature")]
+    public string ClientSignature { get; set; }
+
+    [JsonProperty("type")]
+    public string Type { get; set; } = "ethsign";
+
+    public VerifyOtpRequest(string phone, string country, string otp, string token, string swa, long time, string signature)
+    {
+        Data = new VerifyOtpData(phone, country, otp, token, swa, time);
+        ClientSignature = signature;
+    }
+}
+
+[Serializable]
+public class VerifyOtpData
+{
+    [JsonProperty("whatsapp_number")]
+    public string WhatsappNumber { get; set; }
+
+    [JsonProperty("country_short_name")]
+    public string CountryShortName { get; set; }
+
+    [JsonProperty("token")]
+    public string Token { get; set; }
+
+    [JsonProperty("otp")]
+    public string Otp { get; set; }
+
+    [JsonProperty("client_swa")]
+    public string ClientSwa { get; set; }
+
+    [JsonProperty("timestamp")]
+    public long Timestamp { get; set; }
+
+    public VerifyOtpData(string phone, string country, string otp, string token, string swa, long time)
+    {
+        WhatsappNumber = phone;
+        CountryShortName = country;
+        Token = token;
+        Otp = otp;
+        ClientSwa = swa;
+        Timestamp = time;
+    }
+}
+
+[Serializable]
+public class ResendOtpRequest
+{
+    [JsonProperty("data")]
+    public ResendOtpData Data { get; set; }
+
+    [JsonProperty("client_signature")]
+    public string ClientSignature { get; set; }
+
+    [JsonProperty("type")]
+    public string Type { get; set; } = "ethsign";
+
+    public ResendOtpRequest(string phone, string country, string token, string swa, long time, string signature)
+    {
+        Data = new ResendOtpData(phone, country, token, swa, time);
+        ClientSignature = signature;
+    }
+}
+
+[Serializable]
+public class ResendOtpData
+{
+    [JsonProperty("whatsapp_number")]
+    public string WhatsappNumber { get; set; }
+
+    [JsonProperty("country_short_name")]
+    public string CountryShortName { get; set; }
+
+    [JsonProperty("token")]
+    public string Token { get; set; }
+
+    [JsonProperty("client_swa")]
+    public string ClientSwa { get; set; }
+
+    [JsonProperty("timestamp")]
+    public long Timestamp { get; set; }
+
+    public ResendOtpData(string phone, string country, string token, string swa, long time)
+    {
+        WhatsappNumber = phone;
+        CountryShortName = country;
+        Token = token;
+        ClientSwa = swa;
+        Timestamp = time;
+    }
+}
+
+[Serializable]
+public class AuthResponseBff
+{
+    [JsonProperty("status")]
+    public string Status { get; set; }
+
+    [JsonProperty("data")]
+    public AuthResponse Data { get; set; }
+}
+
+[Serializable]
+public class AuthResponse
+{
+    [JsonProperty("auth_token")]
+    public string AuthToken { get; set; }
+
+    [JsonProperty("message")]
+    public string Message { get; set; }
+
+    [JsonProperty("refresh_auth_token")]
+    public string RefreshAuthToken { get; set; }
+
+    [JsonProperty("device_token")]
+    public string DeviceToken { get; set; }
+
+    [JsonProperty("trace_id")]
+    public string TraceId { get; set; }
 }
