@@ -1,4 +1,5 @@
 using Newtonsoft.Json;
+using OktoSDK.Auth;
 using UnityEngine;
 using UnityEngine.UI;
 
@@ -23,20 +24,20 @@ namespace OktoSDK
         void ShowActiveSession()
         {
 
-            if (OktoAuthExample.getOktoClient() == null)
+            if (OktoAuthManager.GetOktoClient() == null)
             {
                 ResponsePanel.SetResponse("You are not logged In!");
                 return;
             }
 
-            if (!OktoAuthExample.getOktoClient().IsLoggedIn())
+            if (!OktoAuthManager.GetOktoClient().IsLoggedIn())
             {
                 ResponsePanel.SetResponse("You are not logged In!");
                 return;
             }
 
 
-            string jsonString = JsonConvert.SerializeObject(OktoAuthExample.getOktoClient()._userDetails, Formatting.Indented);
+            string jsonString = JsonConvert.SerializeObject(OktoAuthManager.GetOktoClient()._userDetails, Formatting.Indented);
             CustomLogger.Log("Active Session : " + jsonString);
             if (string.IsNullOrEmpty(jsonString) || jsonString.Equals("null"))
             {

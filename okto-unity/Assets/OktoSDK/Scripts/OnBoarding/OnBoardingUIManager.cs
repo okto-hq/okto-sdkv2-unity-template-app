@@ -1,3 +1,4 @@
+using OktoSDK.Auth;
 using UnityEngine;
 using UnityEngine.UI;
 
@@ -15,18 +16,19 @@ namespace OktoSDK
 
         private void OnEnable()
         {
-            onBoardingBtn.onClick.AddListener(OnClickOnBoardingBtn);
+            if (onBoardingBtn != null)
+                onBoardingBtn.onClick.AddListener(OnClickOnBoardingBtn);
         }
 
         private void OnDisable()
         {
-            onBoardingBtn.onClick.RemoveListener(OnClickOnBoardingBtn);
+            if (onBoardingBtn != null)
+                onBoardingBtn.onClick.RemoveListener(OnClickOnBoardingBtn);
         }
 
         void OnClickOnBoardingBtn()
         {
-
-            OktoAuthExample.SetConfig();
+            OktoAuthManager.SetConfig();
             onboardingWebview.OpenOnBoardingScreen();
         }
 

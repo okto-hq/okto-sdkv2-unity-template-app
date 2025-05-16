@@ -1,35 +1,37 @@
 using System;
+using System.Collections.Generic;
 using System.Threading.Tasks;
 using UnityEngine;
+using OktoSDK.BFF;
 
-//This is an independent script which called GetWallets() Api
+// This is an independent script that calls GetWallets API
 namespace OktoSDK
 {
     public class Account : MonoBehaviour
     {
-        public async Task<object> GetAccount(OktoClient oc)
+        public async Task<List<Wallet>> GetWallets()
         {
-            if (oc == null)
-            {
-                ResponsePanel.SetResponse("You are not logged In!");
-                return "You are not logged In!";
-            }
-
-            if (!oc.IsLoggedIn())
-            {
-                ResponsePanel.SetResponse("You are not logged In!");
-                return "You are not logged In!";
-            }
-
             try
             {
-                return await BffClientRepository.GetBffClientRepository().GetWallets();
-
+                var bffWallets = await BffClientRepository.GetWallets();
+                
+                // Convert BFF wallets to model wallets
+                //List<Wallet> modelWallets = new List<Wallet>();
+                //foreach (var bffWallet in bffWallets)
+                //{
+                //    modelWallets.Add(new Wallet
+                //    {
+                //        address = bffWallet.address,
+                //        networkName = bffWallet.networkName
+                //    });
+                //}
+                
+                return bffWallets;
             }
             catch (Exception error)
             {
                 CustomLogger.LogError($"Failed to retrieve wallets: {error}");
-                throw;
+                throw new Exception("Unable to fetch wallet information");
             }
         }
     }

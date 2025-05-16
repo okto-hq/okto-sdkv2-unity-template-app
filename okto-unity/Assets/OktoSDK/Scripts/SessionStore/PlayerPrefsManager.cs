@@ -1,6 +1,7 @@
 using UnityEngine;
-using OktoSDK;
 using System;
+using static OktoSDK.LoginOAuthDataModels;
+using Newtonsoft.Json;
 
 namespace OktoSDK
 {
@@ -8,38 +9,24 @@ namespace OktoSDK
     {
         private const string USER_SESSION_DETAILS = "UserSessionDetails";
 
-        // Save method for authentication result without WhatsApp details
-        public static void SaveAuthenticateResult(string environment, SessionConfig sessionConfig)
+        // Save method for authentication result with details (Email, WhatsApp, etc.)
+        public static void SaveAuthenticateResult(string environment, SessionConfig sessionConfig, UserDetailBase details)
         {
-            CustomLogger.Log($"[SaveAuthenticateResult] Saving authentication result without WhatsApp details. Environment: {environment}");
+            CustomLogger.Log($"[SaveAuthenticateResult] Saving authentication result with details. Environment: {environment}");
 
-            UserDetails userDetails = new UserDetails
+            var userDetails = new UserDetails
             {
                 env = environment,
-                whatsapp = new WhatsApp { number = "" },  // Empty if not provided
+                details = details,  // Save specific detail
                 sessionData = sessionConfig
             };
 
-            string json = JsonUtility.ToJson(userDetails);
-            PlayerPrefs.SetString(USER_SESSION_DETAILS, json);
-            PlayerPrefs.Save();
-
-            CustomLogger.Log($"[SaveAuthenticateResult] Data saved successfully: {json}");
-        }
-
-        // Save method for authentication result with WhatsApp details
-        public static void SaveAuthenticateResult(string environment, SessionConfig sessionConfig, WhatsApp whatsAppDetails = null)
-        {
-            CustomLogger.Log($"[SaveAuthenticateResult] Saving authentication result with WhatsApp details. Environment: {environment}");
-
-            UserDetails userDetails = new UserDetails
-            {
-                env = environment,
-                whatsapp = whatsAppDetails,
-                sessionData = sessionConfig
-            };
-
-            string json = JsonUtility.ToJson(userDetails);
+            string json = JsonConvert.SerializeObject(userDetails, Formatting.None,
+                new JsonSerializerSettings
+                {
+                    TypeNameHandling = TypeNameHandling.Auto  // Crucial for interface serialization
+                });
+            
             PlayerPrefs.SetString(USER_SESSION_DETAILS, json);
             PlayerPrefs.Save();
 
@@ -52,13 +39,21 @@ namespace OktoSDK
             if (PlayerPrefs.HasKey(USER_SESSION_DETAILS))
             {
                 string json = PlayerPrefs.GetString(USER_SESSION_DETAILS);
+
+                var userDetails = JsonConvert.DeserializeObject<UserDetails>(json,
+                    new JsonSerializerSettings
+                    {
+                        TypeNameHandling = TypeNameHandling.Auto
+                    });
+
                 CustomLogger.Log($"[LoadAuthenticateResult] Loaded user details: {json}");
-                return JsonUtility.FromJson<UserDetails>(json);
+                return userDetails;
             }
 
             CustomLogger.LogWarning("[LoadAuthenticateResult] No user session details found in PlayerPrefs.");
-            return null; // Return null if no data exists
+            return null;
         }
+
 
         public static void Delete()
         {
@@ -66,17 +61,17 @@ namespace OktoSDK
             {
                 PlayerPrefs.DeleteKey(USER_SESSION_DETAILS);
             }
-
         }
     }
 
-
+    // UserDetails class without generics
     [Serializable]
     public class UserDetails
     {
         public string env;
-        public WhatsApp whatsapp;
         public SessionConfig sessionData;
-    }
 
+        [SerializeReference]
+        public UserDetailBase details;  // Can store any IUserDetail type (Email, WhatsApp, etc.)
+    }
 }

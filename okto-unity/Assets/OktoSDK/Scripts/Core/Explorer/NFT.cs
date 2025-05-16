@@ -1,5 +1,7 @@
 using Newtonsoft.Json;
+using OktoSDK.BFF;
 using System;
+using System.Collections.Generic;
 using System.Threading.Tasks;
 using UnityEngine;
 
@@ -9,24 +11,11 @@ namespace OktoSDK
     public class NFT : MonoBehaviour
     {
 
-        public async Task<object> GetNftCollections(OktoClient oc)
+        public async Task<List<UserNFTBalance>> GetNftCollections(OktoClient oc)
         {
-            if (oc == null)
-            {
-                ResponsePanel.SetResponse("You are not logged In!");
-                return "You are not logged In!";
-            }
-
-            if (!oc.IsLoggedIn())
-            {
-                ResponsePanel.SetResponse("You are not logged In!");
-                //ResponsePanel.DisplayResponse();
-                return "You are not logged In!";
-            }
-
             try
             {
-                var response = await BffClientRepository.GetBffClientRepository().GetPortfolioNft();
+                var response = await BffClientRepository.GetPortfolioNft();
                 return response;
             }
             catch (Exception error)

@@ -1,4 +1,4 @@
-
+using Nethereum.ABI.Model;
 
 namespace OktoSDK
 {
@@ -16,14 +16,18 @@ namespace OktoSDK
 
         public static readonly string MaxFeePerGas = "0xBA43B7400";
 
+        public static readonly string FEE_PAYER_ADDRESS = "0x0000000000000000000000000000000000000000";
+
         public static readonly EnvConfig SandboxEnvConfig = new EnvConfig
         {
             GatewayBaseUrl = "https://sandbox-okto-gateway.oktostage.com",
             BffBaseUrl = "https://sandbox-api.okto.tech",
-            PaymasterAddress = "0x5408fAa7F005c46B85d82060c532b820F534437c",
-            JobManagerAddress = "0x21E822446C32FA22b29392F29597ebdcFd8511f8",
-            EntryPointContractAdress = "0xA5E95a08229A816c9f3902E4a5a618C3928ad3bA",
-            ChainId = 8801
+            PaymasterAddress = "0x74324fA6Fa67b833dfdea4C1b3A9898574d076e3",
+            JobManagerAddress = "0x0543aD80b41C5f5956d34503668CDb965deCB617",
+            EntryPointContractAdress = "0xCa5b1b0d3893b5152014fD5B519FF50f7C40f9da",
+            ChainId = 1802466136,
+            OnRampBaseUrl = "https://sandbox-pay.okto.tech",
+            LoginOAuth = "https://sandbox-onboarding.okto.tech/__/auth/handler",
         };
 
         public static readonly EnvConfig ProductionEnvConfig = new EnvConfig
@@ -31,9 +35,11 @@ namespace OktoSDK
             GatewayBaseUrl = "https://okto-gateway.oktostage.com",
             BffBaseUrl = "https://3p-bff.oktostage.com",
             PaymasterAddress = "0xdAa292E9B9a6B287c84d636F3b65f4A5Dc787e3f",
-            JobManagerAddress = "0xd57F1802d164Ae465363ec3F2d62cbf6fc7dfF23",
+            JobManagerAddress = "0xb5e77f7Ff1ab31Fc1bE99F484DB62f01a6b93D4d",
             EntryPointContractAdress = "0xec3F5f7a3f0e43e61D8711A90B8c8Fc59B9a88ba",
-            ChainId = 124736089
+            ChainId = 124736089,
+            OnRampBaseUrl = "https://pay.oktostage.com",
+            LoginOAuth = "https://onboarding.oktostage.com/__/auth/handler",
         };
     }
 }

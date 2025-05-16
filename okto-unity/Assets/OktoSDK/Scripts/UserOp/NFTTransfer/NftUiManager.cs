@@ -1,10 +1,12 @@
 using System;
 using System.Collections.Generic;
 using Newtonsoft.Json;
-using OktoSDK;
 using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
+using OktoSDK.Models.Wallet;
+using OktoSDK.BFF;
+using OktoSDK.Auth;
 
 
 // This script handles the selection of the blockchain network from a dropdown UI element.
@@ -65,8 +67,25 @@ namespace OktoSDK
             NftTransferView.OnClose();
         }
 
+        private bool EnsureLoggedIn()
+        {
+            var oc = OktoAuthManager.GetOktoClient();
+
+            if (oc == null || !oc.IsLoggedIn())
+            {
+                string message = "You are not logged In!";
+                ResponsePanel.SetResponse(message);
+                CustomLogger.Log(message);
+                return false;
+            }
+
+            return true;
+        }
+
         private async void OpenRawTransaction()
         {
+            if (!EnsureLoggedIn()) return;
+
             Loader.ShowLoader();
 
             try
@@ -74,8 +93,7 @@ namespace OktoSDK
                 chainList.options.Clear();
                 walletList.Clear();
 
-                walletList =
-                (List<Wallet>)await account.GetAccount(OktoAuthExample.getOktoClient());
+                walletList = await account.GetWallets();
 
 
                 foreach (var item in walletList)
@@ -93,10 +111,8 @@ namespace OktoSDK
 
         private async void CallNetWorkApi()
         {
-            networkList =
-              (List<NetworkData>)await chain.GetChains(OktoAuthExample.getOktoClient());
-            SelectChain(chainList.value);
-
+            networkList = await chain.GetChains();
+            SelectChain(0);
         }
 
         private void SetChain()
@@ -117,7 +133,7 @@ namespace OktoSDK
                 {
                     if (networkList[i].caipId.Equals(NftTransferView.GetNetwork()))
                     {
-                        NftTransferController.SetCurrentChain(networkList[i]);
+                        TransactionConstants.CurrentChain = networkList[i];
                         CustomLogger.Log("SetCurrent_Chain " + JsonConvert.SerializeObject(networkList[i]));
                         break;
                     }

@@ -9,6 +9,9 @@ using Newtonsoft.Json;
 using System.Linq;
 using NethereumHex = Nethereum.Hex.HexConvertors.Extensions.HexByteConvertorExtensions;
 using System.Collections.Generic;
+using System.Threading.Tasks;
+using OktoSDK.UserOp;
+using UserOpType = OktoSDK.UserOp.UserOp;
 
 
 /*
@@ -42,18 +45,6 @@ namespace OktoSDK
 {
     public class EVMRawController : MonoBehaviour
     {
-        // Define the ABI
-        private static readonly Parameter[] INTENT_ABI = new[]
-        {
-        new Parameter("uint256", "_jobId"),
-        new Parameter("address", "_clientSWA"),
-        new Parameter("address", "_jobCreatorId"),
-        new Parameter("bytes", "_policyInfo"),
-        new Parameter("bytes", "_gsnData"),
-        new Parameter("bytes", "_jobParameters"),
-        new Parameter("string", "_intentType")
-    };
-
         private readonly FunctionCallEncoder encoder;
 
         public EVMRawController()
@@ -62,37 +53,18 @@ namespace OktoSDK
         }
 
         // Step 1: Create Transaction
-        public Transaction CreateTransaction(string from, string to, string value, string data = "0x")
+        public OktoSDK.UserOp.Transaction CreateTransaction(string from, string to, string value, string data = "0x")
         {
-            return new Transaction
+            return new OktoSDK.UserOp.Transaction
             {
-                from = from,
-                to = to,
-                data = data,
-                value = value,
+                From = from,
+                To = to,
+                Data = data,
+                Value = value,
             };
         }
 
         public static EVMRawController _instance;
-
-        public NetworkData currentChain;
-
-        public static void SetCurrentChain(NetworkData newChain)
-        {
-            _instance.currentChain = new NetworkData
-            {
-                caipId = newChain.caipId,
-                networkName = newChain.networkName,
-                chainId = newChain.chainId,
-                logo = newChain.logo,
-                sponsorshipEnabled = newChain.sponsorshipEnabled,
-                gsnEnabled = newChain.gsnEnabled,
-                type = newChain.type,
-                networkId = newChain.networkId,
-                onRampEnabled = newChain.onRampEnabled,
-                whitelisted = newChain.whitelisted
-            };
-        }
 
         private void OnEnable()
         {
@@ -101,15 +73,15 @@ namespace OktoSDK
 
 
         // Step 2: Encode Job Parameters
-        public byte[] EncodeJobParameters(Transaction transaction, string caip2Id)
+        public byte[] EncodeJobParameters(OktoSDK.UserOp.Transaction transaction, string caip2Id)
         {
             // Ensure consistent JSON formatting
             var txParams = new
             {
-                from = transaction.from,
-                to = transaction.to,
-                data = transaction.data,
-                value = transaction.value
+                from = transaction.From,
+                to = transaction.To,
+                data = transaction.Data,
+                value = transaction.Value
             };
 
             var transactionJson = JsonConvert.SerializeObject(txParams, new JsonSerializerSettings
@@ -175,26 +147,26 @@ namespace OktoSDK
             string userSWA,
             string clientSWA,
             string nonce,
-            Transaction transaction = null,
+            OktoSDK.UserOp.Transaction transaction = null,
             string intentType = "RAW_TRANSACTION",
             Dictionary<string, object> intentData = null)
         {
             try
             {
-                byte[] finalEncodedJobParameters = EncodeJobParameters(transaction,currentChain.caipId);
+                byte[] finalEncodedJobParameters = EncodeJobParameters(transaction, TransactionConstants.CurrentChain.caipId);
                 byte[] encodedGSNData = EncodeGSNData();
                 byte[] encodedPolicyInfo;
-                if (currentChain == null)
+                if (TransactionConstants.CurrentChain == null)
                 {
                     //if current chain is not set then set false
                     encodedPolicyInfo = EncodePolicyInfo(false, false);
                 }
                 else
                 {
-                    encodedPolicyInfo = EncodePolicyInfo(currentChain.gsnEnabled, currentChain.sponsorshipEnabled);
+                    encodedPolicyInfo = EncodePolicyInfo(TransactionConstants.CurrentChain.gsnEnabled, TransactionConstants.CurrentChain.sponsorshipEnabled);
                 }
                 // Calculate initiateJob selector
-                string functionSignature = $"{Constants.FUNCTION_NAME}({string.Join(",", INTENT_ABI.Select(p => p.Type))})";
+                string functionSignature = $"{Constants.FUNCTION_NAME}({string.Join(",", TransactionConstants.INTENT_ABI.Select(p => p.Type))})";
                 byte[] hashBytes = new Sha3Keccack().CalculateHash(Encoding.UTF8.GetBytes(functionSignature));
                 string initiateJobSelector = "0x" + NethereumHex.ToHex(hashBytes).Substring(0, 8).ToLowerInvariant();
 
@@ -207,11 +179,12 @@ namespace OktoSDK
 
                 // Encode initiateJob parameters
                 byte[] initiateJobParamsData = encoder.EncodeParameters(
-                    INTENT_ABI,
+                    TransactionConstants.INTENT_ABI,
                     new object[] {
                     jobId,  // Use the properly converted jobId
                     clientSWA,
                     userSWA,
+                    TransactionConstants.FeePayerAddress,
                     encodedPolicyInfo,
                     encodedGSNData,
                     finalEncodedJobParameters,
@@ -231,7 +204,7 @@ namespace OktoSDK
                     },
                     new object[] {
                     HexToByteArray(Constants.EXECUTE_USEROP_FUNCTION_SELECTOR),
-                    OktoAuthExample.getOktoClient().Env.JobManagerAddress,
+                    EnvironmentHelper.GetJobManagerAddress(),
                     BigInteger.Zero,
                     initiateJobData
                     }
@@ -246,14 +219,12 @@ namespace OktoSDK
                 throw;
             }
         }
-
-        // Step 6: Create UserOp
-        public UserOp CreateUserOp(
+        public async Task<UserOpType> CreateUserOp(
             string userSWA,
             string clientSWA,
             string nonce,
             string paymasterData,
-            Transaction transaction = null)
+            OktoSDK.UserOp.Transaction transaction = null)
         {
             string callData = GenerateCallData(userSWA, clientSWA, nonce, transaction);
 
@@ -261,31 +232,45 @@ namespace OktoSDK
             string paddedNonce = nonce.StartsWith("0x") ? nonce : "0x" + nonce;
             paddedNonce = PadHex(paddedNonce, 32).ToLowerInvariant();
 
-            return new UserOp
+            // Fetch gas price info
+            UserOperationGasPriceResult gasPriceResult = (await TransactionConstants.GetUserOperationGasPriceAsync()).Result;
+
+            CustomLogger.Log("EnvironmentHelper.GetPaymasterAddress() " + EnvironmentHelper.GetPaymasterAddress());
+
+            return new UserOpType
             {
                 sender = userSWA,
                 nonce = paddedNonce,
-                paymaster = OktoAuthExample.getOktoClient().Env.PaymasterAddress,
+                paymaster = EnvironmentHelper.GetPaymasterAddress(),
                 callData = callData,
-                paymasterData = paymasterData
-                // signature is not set here, will be null by default
+                paymasterData = paymasterData,
+                maxFeePerGas = gasPriceResult.maxFeePerGas,
+                maxPriorityFeePerGas = gasPriceResult.maxPriorityFeePerGas
             };
         }
 
         // Helper Methods
         private byte[] AddOffset(byte[] data)
         {
-            byte[] result = new byte[data.Length + 32];
-            byte[] offsetBytes = new byte[32];
-            BitConverter.GetBytes(32).CopyTo(offsetBytes, 0);
-            if (BitConverter.IsLittleEndian)
-                Array.Reverse(offsetBytes);
-
-            Array.Copy(offsetBytes, 0, result, 0, 32);
+            // Create a byte array with 32 bytes for the offset and then the data
+            byte[] result = new byte[32 + data.Length];
+            
+            // Set the offset at position 0x20 (32 in decimal)
+            BigInteger offset = 32;
+            byte[] offsetBytes = offset.ToByteArray().Reverse().ToArray();
+            
+            // Pad with zeros to 32 bytes
+            int padLength = 32 - offsetBytes.Length;
+            for (int i = 0; i < offsetBytes.Length; i++)
+            {
+                result[padLength + i] = offsetBytes[i];
+            }
+            
+            // Copy data after the offset
             Array.Copy(data, 0, result, 32, data.Length);
+            
             return result;
         }
-
 
         private byte[] HexToByteArray(string hex)
         {
@@ -301,8 +286,9 @@ namespace OktoSDK
         private string PadHex(string hex, int size)
         {
             hex = hex.StartsWith("0x") ? hex.Substring(2) : hex;
-            return "0x" + hex.PadLeft(size * 2, '0');
+            // Ensure the hex string is properly padded to the required size
+            string paddedHex = hex.PadLeft(size * 2, '0');
+            return "0x" + paddedHex;
         }
-
     }
 }

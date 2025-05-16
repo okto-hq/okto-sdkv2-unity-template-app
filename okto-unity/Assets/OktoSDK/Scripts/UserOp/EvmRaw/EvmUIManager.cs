@@ -1,6 +1,9 @@
 using System;
 using System.Collections.Generic;
 using Newtonsoft.Json;
+using OktoSDK.Auth;
+using OktoSDK.BFF;
+using OktoSDK.Models.Wallet;
 using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
@@ -39,10 +42,9 @@ namespace OktoSDK
         [SerializeField]
         private Chain chain;
 
-        public List<Wallet> walletList;
+        public List<BFF.Wallet> walletList;
 
         public List<NetworkData> networkList;
-
 
         private void OnEnable()
         {
@@ -67,8 +69,25 @@ namespace OktoSDK
             EvmRawView.OnClose();
         }
 
+        private bool EnsureLoggedIn()
+        {
+            var oc = OktoAuthManager.GetOktoClient();
+
+            if (oc == null || !oc.IsLoggedIn())
+            {
+                string message = "You are not logged In!";
+                ResponsePanel.SetResponse(message);
+                CustomLogger.Log(message);
+                return false;
+            }
+
+            return true;
+        }
+
         private async void OpenRawTransaction()
         {
+            if (!EnsureLoggedIn()) return;
+
             Loader.ShowLoader();
 
             try
@@ -76,9 +95,7 @@ namespace OktoSDK
                 chainList.options.Clear();
                 walletList.Clear();
 
-                walletList =
-                (List<Wallet>)await account.GetAccount(OktoAuthExample.getOktoClient());
-
+                walletList = await account.GetWallets();
 
                 foreach (var item in walletList)
                 {
@@ -95,10 +112,8 @@ namespace OktoSDK
 
         private async void CallNetWorkApi()
         {
-            networkList =
-              (List<NetworkData>)await chain.GetChains(OktoAuthExample.getOktoClient());
-            SelectChain(chainList.value);
-
+            networkList = await chain.GetChains();
+            SelectChain(0);
         }
 
         private void SetChain()
@@ -120,7 +135,7 @@ namespace OktoSDK
                 {
                     if (networkList[i].caipId.Equals(EvmRawView.GetNetwork()))
                     {
-                        EVMRawController.SetCurrentChain(networkList[i]);
+                        TransactionConstants.CurrentChain = networkList[i];
                         CustomLogger.Log("SetCurrent_Chain " + JsonConvert.SerializeObject(networkList[i]));
                         break;
                     }
@@ -133,9 +148,7 @@ namespace OktoSDK
 
             Loader.DisableLoader();
             emvPanel.SetActive(true);
-
         }
-
 
         private void SelectChain(int index)
         {
