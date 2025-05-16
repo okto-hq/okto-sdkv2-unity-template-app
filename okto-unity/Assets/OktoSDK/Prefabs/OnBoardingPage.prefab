@@ -14,6 +14,8 @@ GameObject:
   - component: {fileID: 4776000680711318935}
   - component: {fileID: 4426028123138038165}
   - component: {fileID: 5854361978551258158}
+  - component: {fileID: 8630253313854049571}
+  - component: {fileID: 2699698333181921522}
   m_Layer: 5
   m_Name: OnBoardingPage
   m_TagString: Untagged
@@ -105,10 +107,8 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   whatsAppAuthentication: {fileID: 5854361978551258158}
-  webViewObject: {fileID: 0}
-  onLoggedIn:
-    m_PersistentCalls:
-      m_Calls: []
+  emailAuthentication: {fileID: 8630253313854049571}
+  googleAuthManager: {fileID: 2699698333181921522}
 --- !u!114 &5854361978551258158
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -119,5 +119,31 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: a1bbd86ec23c8fb4f9ec893b7dd737c5, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  latestToken: 
+--- !u!114 &8630253313854049571
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8349412486587108107}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 09f8eb7dce1616040ac2b02ad8443e52, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  latestToken: 
+--- !u!114 &2699698333181921522
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8349412486587108107}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: b41974969f645674e977061a037c2e49, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 

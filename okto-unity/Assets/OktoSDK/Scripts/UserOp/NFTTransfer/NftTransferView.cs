@@ -1,10 +1,15 @@
 using System;
-using Newtonsoft.Json;
+using System.Numerics;
 using System.Threading.Tasks;
+using Newtonsoft.Json;
 using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
-using System.Numerics;
+using OktoSDK.Features.Transaction;
+using UserOpType = OktoSDK.UserOp.UserOp;
+using NFTTransferIntentParamsType = OktoSDK.UserOp.NFTTransferIntentParams;
+using ExecuteResult = OktoSDK.BFF.ExecuteResult;
+using OktoSDK.Auth;
 
 //This script deals with visble ui components in NFT transfer Screen
 //It takes those params and feed them to NftTransfer Responsible for encoding of data.
@@ -26,6 +31,9 @@ namespace OktoSDK
 
         [SerializeField]
         private TMP_InputField nftType;
+
+        [SerializeField] 
+        private TMP_InputField feePayer;
 
         [SerializeField]
         private Button signAndExecuteBtn;
@@ -59,6 +67,7 @@ namespace OktoSDK
             _instance.amount.text = string.Empty;
             _instance.nftType.text = string.Empty;
             _instance.receiptAddress.text = string.Empty;
+            _instance.feePayer.text = string.Empty;
         }
 
 
@@ -66,12 +75,12 @@ namespace OktoSDK
             string collectionAddress,
             string nftId, BigInteger amount, string type, string network)
         {
-            var data = new NFTTransferIntentParams
+            var data = new NFTTransferIntentParamsType
             {
                 recipientWalletAddress = recipientWalletAddress,
                 collectionAddress = collectionAddress,
                 nftId = nftId,
-                amount = amount,
+                amount = amount.ToString(),
                 nftType = type,
                 caip2Id = network
             };
@@ -83,7 +92,7 @@ namespace OktoSDK
             userOp = SignUserOp(userOp);
             CustomLogger.Log($"UserOp Signed: {JsonConvert.SerializeObject(userOp, Formatting.Indented)}");
 
-            JsonRpcResponse<ExecuteResult> txHash = await ExecuteUserOp(userOp);
+            BFF.JsonRpcResponse<ExecuteResult> txHash = await ExecuteUserOp(userOp);
             string txHashStr = JsonConvert.SerializeObject(txHash, Formatting.Indented);
 
             //clear all inputfield
@@ -91,7 +100,7 @@ namespace OktoSDK
             return txHashStr;
         }
 
-        UserOp userOp;
+        UserOpType userOp;
 
         public async void OnUserCreate()
         {
@@ -137,14 +146,19 @@ namespace OktoSDK
                 }
             }
 
+            if (!string.IsNullOrEmpty(feePayer.text))
+            {
+                TransactionConstants.FeePayerAddress = feePayer.text;
+            }
+
             CustomLogger.Log("parsedAmount " + parsedAmount);
-            var transferParams = new NFTTransferIntentParams
+            var transferParams = new NFTTransferIntentParamsType
             {
                 caip2Id = network,
                 recipientWalletAddress = receiptAddress.text,
                 collectionAddress = collectionAddress.text,
                 nftId = nftId.text,
-                amount = parsedAmount,
+                amount = parsedAmount.ToString(),
                 nftType = nftType.text
             };
 
@@ -165,14 +179,14 @@ namespace OktoSDK
 
             userOp = SignUserOp(userOp);
             CustomLogger.Log($"UserOp Signed: {JsonConvert.SerializeObject(userOp, Formatting.Indented)}");
-            JsonRpcResponse<ExecuteResult> txHash = await ExecuteUserOp(userOp);
+            BFF.JsonRpcResponse<ExecuteResult> txHash = await ExecuteUserOp(userOp);
             string txHashStr = JsonConvert.SerializeObject(txHash, Formatting.Indented);
             ResponsePanel.SetResponse(txHashStr);
         }
 
         public async void OnUserOPExecute()
         {
-            JsonRpcResponse<ExecuteResult> txHash = await ExecuteUserOp(userOp);
+            BFF.JsonRpcResponse<ExecuteResult> txHash = await ExecuteUserOp(userOp);
             string txHashStr = JsonConvert.SerializeObject(txHash, Formatting.Indented);
             ResponsePanel.SetResponse(txHashStr);
         }
@@ -211,16 +225,6 @@ namespace OktoSDK
                 return;
             }
 
-            //int parsedAmount;
-            //if (int.TryParse(amount.text, out parsedAmount))
-            //{
-            //    if (parsedAmount <= 0)
-            //    {
-            //        ResponsePanel.SetResponse("Enter valid amount");
-            //        return;
-            //    }
-            //}
-
             BigInteger amountParsed;
             if (BigInteger.TryParse(amount.text, out amountParsed))
             {
@@ -231,12 +235,17 @@ namespace OktoSDK
                 }
             }
 
+            if (!string.IsNullOrEmpty(feePayer.text))
+            {
+                TransactionConstants.FeePayerAddress = feePayer.text;
+            }
+
             string txHashStr = await ExecuteNFTTransaction(receiptAddress.text, collectionAddress.text, nftId.text, amountParsed, nftType.text, network);
             ResponsePanel.SetResponse(txHashStr);
         }
 
 
-        async Task<UserOp> CreateUserOp(NFTTransferIntentParams transaction)
+        async Task<UserOpType> CreateUserOp(NFTTransferIntentParamsType transaction)
         {
             var nonce = Guid.NewGuid();
             string guidString = nonce.ToString("N");
@@ -245,13 +254,13 @@ namespace OktoSDK
 
             CustomLogger.Log("Step 1: Creating UserOp");
             // Create UserOp
-            var userOp = nftTransfer.CreateUserOp(
-                userSWA: OktoAuthExample.GetSession().UserSWA,
-                clientSWA: OktoAuthExample.getOktoClient().ClientSWA,
+            var userOp = await nftTransfer.CreateUserOp(
+                userSWA: OktoAuthManager.GetSession().UserSWA,
+                clientSWA: OktoAuthManager.GetOktoClient().ClientSWA,
                 nonce: "0x" + new string('0', 24) + guidString,
                 paymasterData: await PaymasterDataGenerator.Generate(
-                    clientSWA: OktoAuthExample.getOktoClient().ClientSWA,
-                    clientPrivateKey: OktoAuthExample.getOktoClientConfig().ClientPrivateKey,
+                    clientSWA: OktoAuthManager.GetOktoClient().ClientSWA,
+                    clientPrivateKey: OktoAuthManager.GetOktoClientConfig().ClientPrivateKey,
                     nonce: nonce.ToString(),
                     validUntil: DateTime.UtcNow.AddHours(6)
                 ),
@@ -261,16 +270,16 @@ namespace OktoSDK
             return userOp;
         }
 
-        public UserOp SignUserOp(UserOp userOp)
+        public UserOpType SignUserOp(UserOpType userOp)
         {
             var userOpForSigning = userOp.Clone();
 
             // Sign UserOp
             var signedUserOp = UserOpSign.SignUserOp(
                 userOp: userOpForSigning,
-                privateKey: OktoAuthExample.GetSession().SessionPrivKey,
-                entryPointAddress: OktoAuthExample.getOktoClient().Env.EntryPointContractAdress,
-                chainId: OktoAuthExample.getOktoClient().Env.ChainId
+                privateKey: OktoAuthManager.GetSession().SessionPrivKey,
+                entryPointAddress: OktoAuthManager.GetOktoClient().Env.EntryPointContractAdress,
+                chainId: OktoAuthManager.GetOktoClient().Env.ChainId
             );
 
             userOp.signature = signedUserOp.signature;
@@ -279,10 +288,10 @@ namespace OktoSDK
             return signedUserOp;
         }
 
-        async Task<JsonRpcResponse<ExecuteResult>> ExecuteUserOp(UserOp signedUserOp)
+        async Task<BFF.JsonRpcResponse<ExecuteResult>> ExecuteUserOp(UserOpType signedUserOp)
         {
             // Execute UserOp
-            JsonRpcResponse<ExecuteResult> txHash = await UserOpExecute.ExecuteUserOp(signedUserOp, signedUserOp.signature);
+            BFF.JsonRpcResponse<ExecuteResult> txHash = await UserOpExecute.ExecuteUserOp(signedUserOp, signedUserOp.signature);
             //clear all inputfield
             OnClose();
             return txHash;
@@ -293,21 +302,21 @@ namespace OktoSDK
         public async void TestNFTTransfer()
         {
             Loader.ShowLoader();
-            var transferParams = new NFTTransferIntentParams
+            var transferParams = new NFTTransferIntentParamsType
             {
                 caip2Id = network,
                 recipientWalletAddress = "0xEE54970770DFC6cA138D12e0D9Ccc7D20b899089",
                 collectionAddress = "0x9501f6020b0cf374918ff3ea0f2817f8fbdd0762",
                 nftId = "7",
                 nftType = "ERC1155",
-                amount = 1
+                amount = "1"
             };
 
             string txHashStr = await ExecuteNFTTransaction(
                 transferParams.recipientWalletAddress,
                 transferParams.collectionAddress,
                 transferParams.nftId,
-                transferParams.amount,
+                System.Numerics.BigInteger.Parse(transferParams.amount),
                 transferParams.nftType,
                 network);
 

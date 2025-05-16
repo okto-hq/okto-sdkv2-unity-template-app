@@ -5,6 +5,10 @@ using TMPro;
 using UnityEngine;
 using System.Numerics;
 using UnityEngine.UI;
+using OktoSDK.Features.Transaction;
+using UserOpType = OktoSDK.UserOp.UserOp;
+using ExecuteResult = OktoSDK.BFF.ExecuteResult;
+using OktoSDK.Auth;
 
 //This script deals with visble ui components in Token transfer Screen
 //It takes those params and feed them to NftTransfer Responsible for encoding of data.
@@ -20,6 +24,8 @@ namespace OktoSDK
 
         [SerializeField]
         private TMP_InputField receiptAddress;
+
+        [SerializeField] private TMP_InputField feePayer;
 
         [SerializeField]
         private Button signAndExecuteBtn;
@@ -51,11 +57,12 @@ namespace OktoSDK
             _instance.receiptAddress.text = string.Empty;
             _instance.value.text = string.Empty;
             _instance.tokenAddress.text = string.Empty;
+            _instance.feePayer.text = string.Empty;
         }
 
         public async Task<string> ExecuteTokenTransfer(string receiptAddress, BigInteger amount, string network, string tokenAddress)
         {
-            var transaction = new TokenTransferIntentParams
+            var transaction = new OktoSDK.UserOp.TokenTransferIntentParams
             {
                 recipientWalletAddress = receiptAddress,
                 tokenAddress = tokenAddress,
@@ -74,7 +81,7 @@ namespace OktoSDK
             userOpStr = JsonConvert.SerializeObject(userOp, Formatting.Indented);
             CustomLogger.Log($"UserOp Signed: {JsonConvert.SerializeObject(userOp, Formatting.Indented)}");
 
-            JsonRpcResponse<ExecuteResult> txHash = await ExecuteUserOp(userOp);
+            BFF.JsonRpcResponse<ExecuteResult> txHash = await ExecuteUserOp(userOp);
             string txHashStr = JsonConvert.SerializeObject(txHash, Formatting.Indented);
 
             CustomLogger.Log($"Transaction executed. Hash: {txHashStr}");
@@ -85,7 +92,7 @@ namespace OktoSDK
             return txHashStr;
         }
 
-        UserOp userOp;
+        UserOpType userOp;
 
         public async void OnUserCreate()
         {
@@ -113,7 +120,13 @@ namespace OktoSDK
                 }
             }
 
-            var transaction = new TokenTransferIntentParams
+            if (!string.IsNullOrEmpty(feePayer.text))
+            {
+                TransactionConstants.FeePayerAddress = feePayer.text;
+                CustomLogger.Log(TransactionConstants.FeePayerAddress);
+            }
+
+            var transaction = new OktoSDK.UserOp.TokenTransferIntentParams
             {
                 caip2Id = network,
                 recipientWalletAddress = receiptAddress.text,
@@ -137,14 +150,14 @@ namespace OktoSDK
 
             userOp = SignUserOp(userOp, network);
             CustomLogger.Log($"UserOp Signed: {JsonConvert.SerializeObject(userOp, Formatting.Indented)}");
-            JsonRpcResponse<ExecuteResult> txHash = await ExecuteUserOp(userOp);
+            BFF.JsonRpcResponse<ExecuteResult> txHash = await ExecuteUserOp(userOp);
             string txHashStr = JsonConvert.SerializeObject(txHash, Formatting.Indented);
             ResponsePanel.SetResponse(txHashStr);
         }
 
         public async void OnUserOPExecute()
         {
-            JsonRpcResponse<ExecuteResult> txHash = await ExecuteUserOp(userOp);
+            BFF.JsonRpcResponse<ExecuteResult> txHash = await ExecuteUserOp(userOp);
             string txHashStr = JsonConvert.SerializeObject(txHash, Formatting.Indented);
 
             CustomLogger.Log($"Transaction executed. Hash: {txHashStr}");
@@ -178,6 +191,12 @@ namespace OktoSDK
                 }
             }
 
+            if (!string.IsNullOrEmpty(feePayer.text))
+            {
+                TransactionConstants.FeePayerAddress = feePayer.text;
+                CustomLogger.Log(TransactionConstants.FeePayerAddress);
+            }
+
             CustomLogger.Log("parsedAmount " + parsedAmount);
 
             string txHashStr = await ExecuteTokenTransfer(receiptAddress.text, parsedAmount, network, tokenAddress.text);
@@ -186,7 +205,7 @@ namespace OktoSDK
             ResponsePanel.SetResponse(txHashStr);
         }
 
-        async Task<UserOp> CreateUserOp(TokenTransferIntentParams transaction)
+        async Task<UserOpType> CreateUserOp(OktoSDK.UserOp.TokenTransferIntentParams transaction)
         {
             var nonce = Guid.NewGuid();
             string guidString = nonce.ToString("N");
@@ -194,17 +213,17 @@ namespace OktoSDK
             CustomLogger.Log($"Generated nonce : {nonce}");
 
             CustomLogger.Log("Step 1: Creating UserOp");
-            CustomLogger.Log("Sessipn.PrivateKey" + OktoAuthExample.GetSession().SessionPrivKey);
+            CustomLogger.Log("Sessipn.PrivateKey" + OktoAuthManager.GetSession().SessionPrivKey);
 
 
             // Create UserOp
-            var userOp = tokenTransfer.CreateUserOp(
-                userSWA: OktoAuthExample.GetSession().UserSWA,
-                clientSWA: OktoAuthExample.getOktoClient().ClientSWA,
+            var userOp = await tokenTransfer.CreateUserOp(
+                userSWA: OktoAuthManager.GetSession().UserSWA,
+                clientSWA: OktoAuthManager.GetOktoClient().ClientSWA,
                 nonce: "0x" + new string('0', 24) + guidString,
                 paymasterData: await PaymasterDataGenerator.Generate(
-                    clientSWA: OktoAuthExample.getOktoClient().ClientSWA,
-                    clientPrivateKey: OktoAuthExample.getOktoClientConfig().ClientPrivateKey,
+                    clientSWA: OktoAuthManager.GetOktoClient().ClientSWA,
+                    clientPrivateKey: OktoAuthManager.GetOktoClientConfig().ClientPrivateKey,
                     nonce: nonce.ToString(),
                     validUntil: DateTime.UtcNow.AddHours(6)
                 ),
@@ -214,28 +233,27 @@ namespace OktoSDK
             return userOp;
         }
 
-        public UserOp SignUserOp(UserOp userOp, string chainId)
+        public UserOpType SignUserOp(UserOpType userOp, string chainId)
         {
             var userOpForSigning = userOp.Clone();
 
             // Sign UserOp
             var signedUserOp = UserOpSign.SignUserOp(
                 userOp: userOpForSigning,
-                privateKey: OktoAuthExample.GetSession().SessionPrivKey,
-                entryPointAddress: OktoAuthExample.getOktoClient().Env.EntryPointContractAdress,
-                chainId: OktoAuthExample.getOktoClient().Env.ChainId
+                privateKey: OktoAuthManager.GetSession().SessionPrivKey,
+                entryPointAddress: OktoAuthManager.GetOktoClient().Env.EntryPointContractAdress,
+                chainId: OktoAuthManager.GetOktoClient().Env.ChainId
             );
 
             userOp.signature = signedUserOp.signature;
 
-
             return signedUserOp;
         }
 
-        async Task<JsonRpcResponse<ExecuteResult>> ExecuteUserOp(UserOp signedUserOp)
+        async Task<BFF.JsonRpcResponse<ExecuteResult>> ExecuteUserOp(UserOpType signedUserOp)
         {
             // Execute UserOp
-            JsonRpcResponse<ExecuteResult> txHash = await UserOpExecute.ExecuteUserOp(signedUserOp, signedUserOp.signature);
+            BFF.JsonRpcResponse<ExecuteResult> txHash = await UserOpExecute.ExecuteUserOp(signedUserOp, signedUserOp.signature);
             //clear all inputfield
             OnClose();
             return txHash;
@@ -247,12 +265,12 @@ namespace OktoSDK
             string caip2Id = "eip155:137";
             try
             {
-                var transferParams = new TokenTransferIntentParams
+                var transferParams = new OktoSDK.UserOp.TokenTransferIntentParams
                 {
                     caip2Id = "eip155:137", // Target chain CAIP-2 ID
                     recipientWalletAddress = "0xEE54970770DFC6cA138D12e0D9Ccc7D20b899089",
                     tokenAddress = "",   // Token address ("" for native token)
-                    amount = 1000000000000000000  // Target chain CAIP-2 ID
+                    amount = 1  // Target chain CAIP-2 ID
                 };
 
                 string txHashStr = await ExecuteTokenTransfer(transferParams.recipientWalletAddress, transferParams.amount, caip2Id, transferParams.tokenAddress);

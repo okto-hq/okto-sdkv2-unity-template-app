@@ -9,6 +9,13 @@ using Newtonsoft.Json;
 using System.Linq;
 using NethereumHex = Nethereum.Hex.HexConvertors.Extensions.HexByteConvertorExtensions;
 using System.Collections.Generic;
+using System.Threading.Tasks;
+using OktoSDK.BFF;
+using OktoSDK.UserOp;
+using UserOpType = OktoSDK.UserOp.UserOp;
+using NFTTransferIntentParamsType = OktoSDK.UserOp.NFTTransferIntentParams;
+using Nethereum.Util.Keccak;
+using OktoSDK.Auth;
 
 /*
  * NftTransferController - A controller for encoding and managing transactions.
@@ -40,38 +47,7 @@ namespace OktoSDK
 {
     public class NftTransferController : MonoBehaviour
     {
-        // Define the ABI
-        private static readonly Parameter[] INTENT_ABI = new[]
-        {
-        new Parameter("uint256", "_jobId"),
-        new Parameter("address", "_clientSWA"),
-        new Parameter("address", "_jobCreatorId"),
-        new Parameter("bytes", "_policyInfo"),
-        new Parameter("bytes", "_gsnData"),
-        new Parameter("bytes", "_jobParameters"),
-        new Parameter("string", "_intentType")
-    };
-
         public static NftTransferController _instance;
-
-        public NetworkData currentChain;
-
-        public static void SetCurrentChain(NetworkData newChain)
-        {
-            _instance.currentChain = new NetworkData
-            {
-                caipId = newChain.caipId,
-                networkName = newChain.networkName,
-                chainId = newChain.chainId,
-                logo = newChain.logo,
-                sponsorshipEnabled = newChain.sponsorshipEnabled,
-                gsnEnabled = newChain.gsnEnabled,
-                type = newChain.type,
-                networkId = newChain.networkId,
-                onRampEnabled = newChain.onRampEnabled,
-                whitelisted = newChain.whitelisted
-            };
-        }
 
         private void OnEnable()
         {
@@ -86,7 +62,7 @@ namespace OktoSDK
         }
 
         // Step 2: Encode Job Parameters
-        public byte[] EncodeJobParameters(NFTTransferIntentParams transaction)
+        public byte[] EncodeJobParameters(NFTTransferIntentParamsType transaction)
         {
             CustomLogger.Log(JsonConvert.SerializeObject(transaction, Formatting.Indented));
             //BigInteger bigNumber = transaction.amount;
@@ -153,23 +129,23 @@ namespace OktoSDK
             string userSWA,
             string clientSWA,
             string nonce,
-            NFTTransferIntentParams transaction = null,
+            NFTTransferIntentParamsType transaction = null,
             string intentType = "NFT_TRANSFER",
             Dictionary<string, object> intentData = null)
         {
             byte[] finalEncodedJobParameters = EncodeJobParameters(transaction);
             byte[] encodedGSNData = EncodeGSNData();
             byte[] encodedPolicyInfo;
-            if (currentChain == null)
+            if (TransactionConstants.CurrentChain == null)
             {
                 encodedPolicyInfo = EncodePolicyInfo(false, false);
             }
             else
             {
-                encodedPolicyInfo = EncodePolicyInfo(currentChain.gsnEnabled, currentChain.sponsorshipEnabled);
+                encodedPolicyInfo = EncodePolicyInfo(TransactionConstants.CurrentChain.gsnEnabled, TransactionConstants.CurrentChain.sponsorshipEnabled);
             }
 
-            string functionSignature = $"{Constants.FUNCTION_NAME}({string.Join(",", INTENT_ABI.Select(p => p.Type))})";
+            string functionSignature = $"{Constants.FUNCTION_NAME}({string.Join(",", TransactionConstants.INTENT_ABI.Select(p => p.Type))})";
             byte[] hashBytes = new Sha3Keccack().CalculateHash(Encoding.UTF8.GetBytes(functionSignature));
             string initiateJobSelector = "0x" + NethereumHex.ToHex(hashBytes).Substring(0, 8).ToLowerInvariant();
 
@@ -178,11 +154,12 @@ namespace OktoSDK
             BigInteger jobId = new BigInteger(nonceBytes.Reverse().ToArray(), isUnsigned: true);
 
             byte[] initiateJobParamsData = encoder.EncodeParameters(
-                INTENT_ABI,
+                TransactionConstants.INTENT_ABI,
                 new object[] {
                     jobId,
                     clientSWA,
                     userSWA,
+                    TransactionConstants.FeePayerAddress,
                     encodedPolicyInfo,
                     encodedGSNData,
                     finalEncodedJobParameters,
@@ -201,7 +178,7 @@ namespace OktoSDK
                 },
                 new object[] {
                     HexToByteArray(Constants.EXECUTE_USEROP_FUNCTION_SELECTOR),
-                    OktoAuthExample.getOktoClient().Env.JobManagerAddress,
+                    OktoAuthManager.GetOktoClient().Env.JobManagerAddress,
                     BigInteger.Zero,
                     initiateJobData
                 }
@@ -222,25 +199,30 @@ namespace OktoSDK
         }
 
         // Step 6: Create UserOp
-        public UserOp CreateUserOp(
+        public async Task<UserOpType> CreateUserOp(
             string userSWA,
             string clientSWA,
             string nonce,
             string paymasterData,
-            NFTTransferIntentParams transaction = null)
+            NFTTransferIntentParamsType transaction = null)
         {
             string callData = GenerateCallData(userSWA, clientSWA, nonce, transaction);
 
             string paddedNonce = nonce.StartsWith("0x") ? nonce : "0x" + nonce;
             paddedNonce = PadHex(paddedNonce, 32).ToLowerInvariant();
 
-            return new UserOp
+            // Fetch gas price info
+            OktoSDK.UserOp.UserOperationGasPriceResult gasPriceResult = (await TransactionConstants.GetUserOperationGasPriceAsync()).Result;
+
+            return new UserOpType
             {
                 sender = userSWA,
                 nonce = paddedNonce,
-                paymaster = OktoAuthExample.getOktoClient().Env.PaymasterAddress,
+                paymaster = EnvironmentHelper.GetPaymasterAddress(),
                 callData = callData,
-                paymasterData = paymasterData
+                paymasterData = paymasterData,
+                maxFeePerGas = gasPriceResult.maxFeePerGas,
+                maxPriorityFeePerGas = gasPriceResult.maxPriorityFeePerGas
             };
         }
 

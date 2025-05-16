@@ -1,30 +1,19 @@
 using System;
+using System.Collections.Generic;
 using System.Threading.Tasks;
 using UnityEngine;
+using OktoSDK.BFF;
 
 //This is an independent script which called GetChain() Api
 namespace OktoSDK
 {
     public class Chain : MonoBehaviour
     {
-
-        public async Task<object> GetChains(OktoClient oc)
+        public async Task<List<NetworkData>> GetChains()
         {
-            if (oc == null)
-            {
-                ResponsePanel.SetResponse("You are not logged In!");
-                return "You are not logged In!";
-            }
-
-            if (!oc.IsLoggedIn())
-            {
-                ResponsePanel.SetResponse("You are not logged In!");
-                return "You are not logged In!";
-            }
-
             try
             {
-                var supportedNetworks = await BffClientRepository.GetBffClientRepository().GetSupportedNetworks();
+                var supportedNetworks = await BffClientRepository.GetSupportedNetworks();
                 return supportedNetworks;
             }
             catch (Exception error)

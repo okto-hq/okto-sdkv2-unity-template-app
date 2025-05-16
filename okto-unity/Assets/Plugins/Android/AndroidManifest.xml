@@ -1,0 +1,52 @@
+<?xml version="1.0" encoding="utf-8"?>
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+    package="com.okto.sdk.unity"
+    xmlns:tools="http://schemas.android.com/tools">
+
+  <!-- Permissions -->
+  <uses-permission android:name="android.permission.INTERNET"/>
+  <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE"/>
+  <uses-permission android:name="android.permission.CAMERA"/>
+
+  <application android:usesCleartextTraffic="true" android:hardwareAccelerated="true">
+    <activity android:name="com.unity3d.player.UnityPlayerActivity"
+              android:theme="@style/UnityThemeSelector">
+
+      <!-- App launcher intent -->
+      <intent-filter>
+        <action android:name="android.intent.action.MAIN" />
+        <category android:name="android.intent.category.LAUNCHER" />
+      </intent-filter>
+
+      <!-- Deep link for custom scheme (oktosdk://auth) -->
+      <intent-filter>
+        <action android:name="android.intent.action.VIEW" />
+        <category android:name="android.intent.category.DEFAULT" />
+        <category android:name="android.intent.category.BROWSABLE" />
+        <data android:scheme="oktosdk" android:host="auth" />
+      </intent-filter>
+
+      <!-- Handle HTTPS redirect for onboarding.oktostage.com -->
+      <intent-filter android:autoVerify="true">
+        <action android:name="android.intent.action.VIEW" />
+        <category android:name="android.intent.category.DEFAULT" />
+        <category android:name="android.intent.category.BROWSABLE" />
+
+        <!-- Oktostage -->
+        <data android:scheme="https"
+              android:host="onboarding.oktostage.com"
+              android:pathPrefix="/auth/handler" />
+        <data android:scheme="https"
+              android:host="onboarding.oktostage.com"
+              android:pathPrefix="/__/auth/handler" />
+
+        <!-- Sandbox (updated to match https://sandbox-onboarding.okto.tech/__/auth/handler) -->
+        <data android:scheme="https"
+              android:host="sandbox-onboarding.okto.tech"
+              android:pathPrefix="/__/auth/handler" />
+      </intent-filter>
+
+      <meta-data android:name="unityplayer.UnityActivity" android:value="true" />
+    </activity>
+  </application>
+</manifest>

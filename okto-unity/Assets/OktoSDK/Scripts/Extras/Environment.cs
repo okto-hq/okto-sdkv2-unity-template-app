@@ -7,16 +7,10 @@ namespace OktoSDK
     public class Environment : MonoBehaviour
     {
         [SerializeField]
-        private string apiKeyV1;
-
-        [SerializeField]
         private string tokenId;
 
         [SerializeField]
         private bool isManually;
-
-        [SerializeField]
-        private bool shouldFetchClientDetails;
 
         [SerializeField]
         private bool isAutoLoginEnabled;
@@ -30,40 +24,63 @@ namespace OktoSDK
         [SerializeField]
         private bool isLogEnabled;
 
+        [SerializeField]
+        private ScreenOrientation defaulOrientation = ScreenOrientation.Portrait;
+
         private static Environment _instance;
 
-        private void OnEnable()
+        private void Awake()
         {
             _instance = this;
         }
 
         public static string GetTokenId()
         {
+            if (_instance == null)
+            {
+                Debug.LogError("Environment is not initialized.");
+                return string.Empty;
+            }
             return _instance.tokenId;
         }
 
-        public static string GetApiKeyV1()
+        public static ScreenOrientation GetDefaulOrientation()
         {
-            return _instance.apiKeyV1;
+            if (_instance == null)
+            {
+                Debug.LogError("Environment is not initialized.");
+                return ScreenOrientation.Portrait;
+            }
+            return _instance.defaulOrientation;
         }
 
         public static bool GetManuallyLogin()
         {
+            if (_instance == null)
+            {
+                Debug.LogError("Environment is not initialized.");
+                return false;
+            }
             return _instance.isManually;
-        }
-
-        public static bool GetTestMode()
-        {
-            return _instance.shouldFetchClientDetails;
         }
 
         public static bool IsAutoLoginEnabled()
         {
+            if (_instance == null)
+            {
+                Debug.LogError("Environment is not initialized.");
+                return false;
+            }
             return _instance.isAutoLoginEnabled;
         }
 
         public static string GetClientSWA(string env)
         {
+            if (_instance == null)
+            {
+                Debug.LogError("Environment is not initialized.");
+                return string.Empty;
+            }
             if (env.Equals(OktoEnv.SANDBOX))
             {
                 return _instance.clientDetails[0].clientSwa;
@@ -76,6 +93,11 @@ namespace OktoSDK
 
         public static string GetClientPrivateKey(string env)
         {
+            if (_instance == null)
+            {
+                Debug.LogError("Environment is not initialized.");
+                return string.Empty;
+            }
             if (env.Equals(OktoEnv.SANDBOX))
             {
                 return _instance.clientDetails[0].clientPrivateKey;
@@ -88,11 +110,21 @@ namespace OktoSDK
 
         public static string GetGoogleWebClient()
         {
+            if (_instance == null)
+            {
+                Debug.LogError("Environment is not initialized.");
+                return string.Empty;
+            }
             return _instance.googleWebClientId;
         }
 
         public static bool IsLogEnabled()
         {
+            if (_instance == null)
+            {
+                Debug.LogError("Environment is not initialized.");
+                return false;
+            }
             return _instance.isLogEnabled;
         }
     }

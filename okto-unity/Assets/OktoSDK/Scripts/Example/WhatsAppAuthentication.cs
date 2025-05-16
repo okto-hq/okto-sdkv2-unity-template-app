@@ -6,6 +6,7 @@ using Newtonsoft.Json;
 using System.Threading.Tasks;
 using System.Collections.Generic;
 using System;
+using OktoSDK.Auth;
 
 namespace OktoSDK
 {
@@ -13,50 +14,50 @@ namespace OktoSDK
     {
         public string latestToken;
 
-        public async Task<WhatsAppApiResponse> SendPhoneOtpAsync(string phoneNumber, string countryShortName = "IN")
+        public async Task<OtpApiResponse> SendPhoneOtpAsync(string phoneNumber, string countryShortName = "IN")
         {
             CustomLogger.Log("====SendPhoneOtpAsync===");
 
-            string apiUrl = OktoAuthExample.getOktoClient().Env.BffBaseUrl + "/api/oc/v1/authenticate/whatsapp";
+            string apiUrl = OktoAuthManager.GetOktoClient().Env.BffBaseUrl + "/api/oc/v1/authenticate/whatsapp";
             long timestamp = DateTimeOffset.UtcNow.ToUnixTimeMilliseconds();
 
-            var requestBody = new SendOtpData(phoneNumber, countryShortName, OktoAuthExample.getOktoClientConfig().ClientSWA, timestamp);
+            var requestBody = new SendOtpData(phoneNumber, countryShortName, OktoAuthManager.GetOktoClientConfig().ClientSWA, timestamp);
             string jsonData = JsonConvert.SerializeObject(requestBody);
             string signature = SignMessage(jsonData);
 
-            var req = new SendOtpRequest(phoneNumber, countryShortName, OktoAuthExample.getOktoClientConfig().ClientSWA, timestamp, signature);
+            var req = new SendOtpRequest(phoneNumber, countryShortName, OktoAuthManager.GetOktoClientConfig().ClientSWA, timestamp, signature);
 
             CustomLogger.Log(JsonConvert.SerializeObject(req));
 
-            var response = await MakeApiCall<WhatsAppApiResponse>(apiUrl, req);
+            var response = await MakeApiCall<OtpApiResponse>(apiUrl, req);
             return response;
         }
 
-        public async Task<WhatsAppApiResponse> ResendPhoneOtpAsync(string phoneNumber, string token , string countryShortName = "IN")
+        public async Task<OtpApiResponse> ResendPhoneOtpAsync(string phoneNumber, string token , string countryShortName = "IN")
         {
-            string apiUrl = OktoAuthExample.getOktoClient().Env.BffBaseUrl + "/api/oc/v1/authenticate/whatsapp";
+            string apiUrl = OktoAuthManager.GetOktoClient().Env.BffBaseUrl + "/api/oc/v1/authenticate/whatsapp";
             long timestamp = DateTimeOffset.UtcNow.ToUnixTimeMilliseconds();
 
-            var requestBody = new ResendOtpData(phoneNumber, countryShortName, token, OktoAuthExample.getOktoClientConfig().ClientSWA, timestamp);
+            var requestBody = new ResendOtpData(phoneNumber, countryShortName, token, OktoAuthManager.GetOktoClientConfig().ClientSWA, timestamp);
             string jsonData = JsonConvert.SerializeObject(requestBody);
             string signature = SignMessage(jsonData);
 
-            var req = new ResendOtpRequest(phoneNumber, countryShortName, token, OktoAuthExample.getOktoClientConfig().ClientSWA, timestamp, signature);
+            var req = new ResendOtpRequest(phoneNumber, countryShortName, token, OktoAuthManager.GetOktoClientConfig().ClientSWA, timestamp, signature);
 
-            WhatsAppApiResponse response = await MakeApiCall<WhatsAppApiResponse>(apiUrl, req);
+            OtpApiResponse response = await MakeApiCall<OtpApiResponse>(apiUrl, req);
             return response;
         }
 
         public async Task<AuthResponse> VerifyPhoneOtpAsync(string phoneNumber, string otp, string token, string countryShortName = "IN")
         {
-            string apiUrl = OktoAuthExample.getOktoClient().Env.BffBaseUrl + "/api/oc/v1/authenticate/whatsapp/verify";
+            string apiUrl = OktoAuthManager.GetOktoClient().Env.BffBaseUrl + "/api/oc/v1/authenticate/whatsapp/verify";
             long timestamp = DateTimeOffset.UtcNow.ToUnixTimeMilliseconds();
 
-            var requestBody = new VerifyOtpData(phoneNumber, countryShortName, otp, token, OktoAuthExample.getOktoClientConfig().ClientSWA, timestamp);
+            var requestBody = new VerifyOtpData(phoneNumber, countryShortName, otp, token, OktoAuthManager.GetOktoClientConfig().ClientSWA, timestamp);
             string jsonData = JsonConvert.SerializeObject(requestBody);
             string signature = SignMessage(jsonData);
 
-            var req = new VerifyOtpRequest(phoneNumber, countryShortName, otp, token, OktoAuthExample.getOktoClientConfig().ClientSWA, timestamp, signature);
+            var req = new VerifyOtpRequest(phoneNumber, countryShortName, otp, token, OktoAuthManager.GetOktoClientConfig().ClientSWA, timestamp, signature);
 
             AuthResponse response = await MakeApiCall<AuthResponse>(apiUrl, req);
             return response;
@@ -91,9 +92,9 @@ namespace OktoSDK
                         try
                         {
                             // Handle WhatsAppBffApiResponse specifically
-                            if (typeof(T) == typeof(WhatsAppApiResponse))
+                            if (typeof(T) == typeof(OtpApiResponse))
                             {
-                                var whatsAppResponse = JsonConvert.DeserializeObject<WhatsAppBffApiResponse>(responseText);
+                                var whatsAppResponse = JsonConvert.DeserializeObject<OTPBffApiResponse>(responseText);
                                 if (whatsAppResponse != null)
                                 {
                                     if (whatsAppResponse.Status == "error" && whatsAppResponse.Error != null)
@@ -149,7 +150,7 @@ namespace OktoSDK
                 if (errorResponse.ContainsKey("error") && errorResponse["error"] is Newtonsoft.Json.Linq.JObject errorObj)
                 {
                     // Extract the details field from the error object
-                    string errorDetails = errorObj["details"]?.ToString();
+                    string errorDetails = errorObj["message"]?.ToString();
                     if (!string.IsNullOrEmpty(errorDetails))
                     {
                         return errorDetails;
@@ -167,7 +168,7 @@ namespace OktoSDK
 
         public static string SignMessage(string message)
         {
-            string privateKey = OktoAuthExample.getOktoClientConfig().ClientPrivateKey;
+            string privateKey = OktoAuthManager.GetOktoClientConfig().ClientPrivateKey;
             var ethKey = new EthECKey(privateKey.StartsWith("0x") ? privateKey.Substring(2) : privateKey);
             var signer = new EthereumMessageSigner();
             string signature = signer.EncodeUTF8AndSign(message, ethKey);
@@ -177,15 +178,15 @@ namespace OktoSDK
 }
 
 [Serializable]
-public class WhatsAppBffApiResponse
+public class OTPBffApiResponse
 {
     [JsonProperty("status")] public string Status { get; set; }
-    [JsonProperty("data")] public WhatsAppApiResponse Data { get; set; }
+    [JsonProperty("data")] public OtpApiResponse Data { get; set; }
     [JsonProperty("error")] public Error Error { get; set; }
 }
 
 [Serializable]
-public class WhatsAppApiResponse
+public class OtpApiResponse
 {
     [JsonProperty("status")] public string Status { get; set; }
     [JsonProperty("message")] public string Message { get; set; }

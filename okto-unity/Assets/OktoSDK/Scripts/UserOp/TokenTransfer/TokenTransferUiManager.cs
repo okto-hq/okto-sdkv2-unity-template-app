@@ -4,6 +4,8 @@ using Newtonsoft.Json;
 using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
+using OktoSDK.BFF;
+using OktoSDK.Auth;
 
 // This script handles the selection of the blockchain network from a dropdown UI element.
 // It updates the current chain and network ID (capID) dynamically based on user selection.
@@ -60,8 +62,25 @@ namespace OktoSDK
             TokenTransferView.OnClose();
         }
 
+        private bool EnsureLoggedIn()
+        {
+            var oc = OktoAuthManager.GetOktoClient();
+
+            if (oc == null || !oc.IsLoggedIn())
+            {
+                string message = "You are not logged In!";
+                ResponsePanel.SetResponse(message);
+                CustomLogger.Log(message);
+                return false;
+            }
+
+            return true;
+        }
+
         private async void OpenRawTransaction()
         {
+            if (!EnsureLoggedIn()) return;
+
             Loader.ShowLoader();
 
             try
@@ -70,8 +89,7 @@ namespace OktoSDK
                 walletList.Clear();
 
                 walletList =
-                (List<Wallet>)await account.GetAccount(OktoAuthExample.getOktoClient());
-
+                (List<Wallet>)await account.GetWallets();
 
                 foreach (var item in walletList)
                 {
@@ -88,9 +106,8 @@ namespace OktoSDK
 
         private async void CallNetWorkApi()
         {
-            networkList =
-              (List<NetworkData>)await chain.GetChains(OktoAuthExample.getOktoClient());
-            SelectChain(chainList.value);
+            networkList = await chain.GetChains();
+            SelectChain(0);
 
         }
 
@@ -112,7 +129,7 @@ namespace OktoSDK
                 {
                     if (networkList[i].caipId.Equals(TokenTransferView.GetNetwork()))
                     {
-                        TokenTransferController.SetCurrentChain(networkList[i]);
+                        TransactionConstants.CurrentChain = networkList[i];
                         CustomLogger.Log("SetCurrent_Chain " + JsonConvert.SerializeObject(networkList[i]));
                         break;
 

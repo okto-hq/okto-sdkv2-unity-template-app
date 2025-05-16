@@ -1,30 +1,19 @@
 using System;
+using System.Collections.Generic;
 using System.Threading.Tasks;
 using UnityEngine;
+using OktoSDK.BFF;
 
 //This is an independent script which called GetToken() Api
 namespace OktoSDK
 {
     public class GetToken : MonoBehaviour
     {
-        public async Task<object> GetTokens(OktoClient oc)
+        public async Task<List<Token>> GetTokens(OktoClient oc)
         {
-            if (oc == null)
-            {
-                ResponsePanel.SetResponse("You are not logged In!");
-                return "You are not logged In!";
-            }
-
-            if (!oc.IsLoggedIn())
-            {
-                ResponsePanel.SetResponse("You are not logged In!");
-                //ResponsePanel.DisplayResponse();
-                return "You are not logged In!";
-            }
-
             try
             {
-                var response = await BffClientRepository.GetBffClientRepository().GetSupportedTokens();
+                var response = await BffClientRepository.GetSupportedTokens();
                 return response;
             }
             catch (Exception error)

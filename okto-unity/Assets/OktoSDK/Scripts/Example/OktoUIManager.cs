@@ -1,171 +1,173 @@
 using UnityEngine;
-using TMPro;
 using System.Collections.Generic;
 using Newtonsoft.Json;
+using OktoSDK.BFF;
+using OktoSDK.Auth;
 
-
-    //This script has expose methods for
-    // -getAccount()
-    // -getOrdersHistory()
-    // -getPortfolioActivity()
-    // -getTokens()
-    // -getChains()
-    // -getPortfolio()
-    // -getNFTPortfolio()
-
-    namespace OktoSDK
+namespace OktoSDK
+{
+    public class OktoUIManager : MonoBehaviour
     {
-        public class OktoUIManager : MonoBehaviour
+
+        [System.Serializable]
+        public class WalletListWrapper
         {
-            [Header("Components")]
-            [SerializeField] private Account account;
-            [SerializeField] private Chain chain;
-            [SerializeField] private NFT nft;
-            [SerializeField] private GetOrder order;
-            [SerializeField] private Portfolio portfolio;
-            [SerializeField] private GetToken token;
+            public List<Wallet> wallets;
+        }
 
-            [Header("Response Text")]
-            [SerializeField] private GameObject displayObj;
-            [SerializeField] private TextMeshProUGUI resultText;
+        // Button click handlers
+        public async void OnGetAccountButtonClick()
+        {
+            if (!EnsureLoggedIn()) return;
 
-            [System.Serializable]
-            public class WalletListWrapper
+            try
             {
-                public List<Wallet> wallets;
+                Loader.ShowLoader();
+
+                var wallets = await BffClientRepository.GetWallets();
+                string jsonString = JsonConvert.SerializeObject(wallets, Formatting.Indented);
+                DisplayResult(jsonString);
             }
-
-            // Button click handlers
-            public async void OnGetAccountButtonClick()
+            catch (System.Exception e)
             {
-                try
-                {
-                    Loader.ShowLoader();
-
-                    var wallets = await account.GetAccount(OktoAuthExample.getOktoClient());
-                    string jsonString = JsonConvert.SerializeObject(wallets, Formatting.Indented);
-                    DisplayResult(jsonString);
-                }
-                catch (System.Exception e)
-                {
-                    DisplayError("Get Account", e);
-                }
-            }
-
-            public async void OnGetChainsButtonClick()
-            {
-                try
-                {
-                    Loader.ShowLoader();
-
-                    var networks = await chain.GetChains(OktoAuthExample.getOktoClient());
-                    string jsonString = JsonConvert.SerializeObject(networks, Formatting.Indented);
-                    DisplayResult(jsonString);
-                }
-                catch (System.Exception e)
-                {
-                    DisplayError("Get Chains", e);
-                }
-            }
-
-            public async void OnGetNFTCollectionsButtonClick()
-            {
-                try
-                {
-                    Loader.ShowLoader();
-
-                    var collections = await nft.GetNftCollections(OktoAuthExample.getOktoClient());
-                    string jsonString = JsonConvert.SerializeObject(collections, Formatting.Indented);
-                    DisplayResult(jsonString);
-                }
-                catch (System.Exception e)
-                {
-                    DisplayError("Get NFT Collections", e);
-                }
-            }
-
-            public async void OnGetOrdersHistoryButtonClick()
-            {
-                try
-                {
-                    Loader.ShowLoader();
-
-                    var orders = await order.GetOrdersHistory(OktoAuthExample.getOktoClient());
-                    string jsonString = JsonConvert.SerializeObject(orders, Formatting.Indented);
-                    ResponsePanel.SetOrderResponse(jsonString);
-                }
-                catch (System.Exception e)
-                {
-                    DisplayError("Get Orders History", e);
-                }
-            }
-
-            public async void OnGetPortfolioButtonClick()
-            {
-                try
-                {
-                    Loader.ShowLoader();
-
-                    var portfolioData = await portfolio.GetPortfolio(OktoAuthExample.getOktoClient());
-                    string jsonString = JsonConvert.SerializeObject(portfolioData, Formatting.Indented);
-                    DisplayResult(jsonString);
-                }
-                catch (System.Exception e)
-                {
-                    DisplayError("Get Portfolio", e);
-                }
-            }
-
-            public async void OnGetPortfolioActivityButtonClick()
-            {
-                try
-                {
-                    Loader.ShowLoader();
-
-                    var portfolioData = await portfolio.GetPortfolioActivity(OktoAuthExample.getOktoClient());
-                    string jsonString = JsonConvert.SerializeObject(portfolioData, Formatting.Indented);
-                    DisplayResult(jsonString);
-                }
-                catch (System.Exception e)
-                {
-                    DisplayError("Get Portfolio", e);
-                }
-            }
-
-            public async void OnGetTokensButtonClick()
-            {
-                try
-                {
-                    Loader.ShowLoader();
-
-                    var tokens = await token.GetTokens(OktoAuthExample.getOktoClient());
-                    string jsonString = JsonConvert.SerializeObject(tokens, Formatting.Indented);
-                    DisplayResult(jsonString);
-                }
-                catch (System.Exception e)
-                {
-                    DisplayError("Get Tokens", e);
-                }
-            }
-
-            private void DisplayResult(string message)
-            {
-                Debug.Log(message);
-                if (resultText != null)
-                {
-                    ResponsePanel.SetResponse(message);
-                }
-            }
-
-            private void DisplayError(string operation, System.Exception e)
-            {
-                string message = $"{operation} failed: {e.Message}";
-                Debug.Log(message);
-                if (resultText != null)
-                {
-                    ResponsePanel.SetResponse(message);
-                }
+                DisplayError("Get Account", e);
             }
         }
 
+        public async void OnGetChainsButtonClick()
+        {
+            if (!EnsureLoggedIn()) return;
+
+            try
+            {
+                Loader.ShowLoader();
+
+                var networks = await BffClientRepository.GetSupportedNetworks();
+                string jsonString = JsonConvert.SerializeObject(networks, Formatting.Indented);
+                DisplayResult(jsonString);
+            }
+            catch (System.Exception e)
+            {
+                DisplayError("Get Chains", e);
+            }
+        }
+
+        public async void OnGetNFTCollectionsButtonClick()
+        {
+            if (!EnsureLoggedIn()) return;
+
+            try
+            {
+                Loader.ShowLoader();
+
+                var collections = await BffClientRepository.GetPortfolioNft();
+                string jsonString = JsonConvert.SerializeObject(collections, Formatting.Indented);
+                DisplayResult(jsonString);
+            }
+            catch (System.Exception e)
+            {
+                DisplayError("Get NFT Collections", e);
+            }
+        }
+
+        public async void OnGetOrdersHistoryButtonClick()
+        {
+            if (!EnsureLoggedIn()) return;
+
+            try
+            {
+                Loader.ShowLoader();
+
+                var orders = await BffClientRepository.GetOrders();
+                string jsonString = JsonConvert.SerializeObject(orders, Formatting.Indented);
+                OrderResponsePanel.SetOrderResponse(jsonString);
+            }
+            catch (System.Exception e)
+            {
+                DisplayError("Get Orders History", e);
+            }
+        }
+
+        public async void OnGetPortfolioButtonClick()
+        {
+            if (!EnsureLoggedIn()) return;
+
+            try
+            {
+                Loader.ShowLoader();
+
+                var portfolioData = await BffClientRepository.GetPortfolio();
+                string jsonString = JsonConvert.SerializeObject(portfolioData, Formatting.Indented);
+                DisplayResult(jsonString);
+            }
+            catch (System.Exception e)
+            {
+                DisplayError("Get Portfolio", e);
+            }
+        }
+
+        public async void OnGetPortfolioActivityButtonClick()
+        {
+            if (!EnsureLoggedIn()) return;
+
+            try
+            {
+                Loader.ShowLoader();
+
+                var portfolioData = await BffClientRepository.GetPortfolioActivity();
+                string jsonString = JsonConvert.SerializeObject(portfolioData, Formatting.Indented);
+                DisplayResult(jsonString);
+            }
+            catch (System.Exception e)
+            {
+                DisplayError("Get Portfolio Activity", e);
+            }
+        }
+
+        public async void OnGetTokensButtonClick()
+        {
+            if (!EnsureLoggedIn()) return;
+
+            try
+            {
+                Loader.ShowLoader();
+
+                var tokens = await BffClientRepository.GetSupportedTokens();
+                string jsonString = JsonConvert.SerializeObject(tokens, Formatting.Indented);
+                DisplayResult(jsonString);
+            }
+            catch (System.Exception e)
+            {
+                DisplayError("Get Tokens", e);
+            }
+        }
+
+        private bool EnsureLoggedIn()
+        {
+            var oc = OktoAuthManager.GetOktoClient();
+
+            if (oc == null || !oc.IsLoggedIn())
+            {
+                string message = "You are not logged In!";
+                ResponsePanel.SetResponse(message);
+                CustomLogger.Log(message);
+                return false;
+            }
+
+            return true;
+        }
+
+        private void DisplayResult(string message)
+        {
+            CustomLogger.Log(message);
+            ResponsePanel.SetResponse(message);
+        }
+
+        private void DisplayError(string operation, System.Exception e)
+        {
+            string message = $"{operation} failed: {e.Message}";
+            CustomLogger.Log(message);
+            ResponsePanel.SetResponse(message);
+        }
     }
+}

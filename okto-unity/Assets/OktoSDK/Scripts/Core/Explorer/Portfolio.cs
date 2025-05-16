@@ -1,6 +1,8 @@
 using System;
+using System.Collections.Generic;
 using System.Threading.Tasks;
 using UnityEngine;
+using OktoSDK.BFF;
 
 //This is an independent script which calls GetPortfolio() Api
 //This is an independent script which calls GetPortfolioActivity() Api
@@ -11,25 +13,11 @@ namespace OktoSDK
     public class Portfolio : MonoBehaviour
     {
 
-        public async Task<object> GetPortfolio(OktoClient oc)
+        public async Task<UserPortfolioData> GetPortfolio(OktoClient oc)
         {
-
-            if (oc == null)
-            {
-                ResponsePanel.SetResponse("You are not logged In!");
-                return "You are not logged In!";
-            }
-
-            if (!oc.IsLoggedIn())
-            {
-                ResponsePanel.SetResponse("You are not logged In!");
-                return "You are not logged In!";
-            }
-
-
             try
             {
-                return await BffClientRepository.GetBffClientRepository().GetPortfolio();
+                return await BffClientRepository.GetPortfolio();
             }
             catch (Exception error)
             {
@@ -38,25 +26,13 @@ namespace OktoSDK
             }
         }
 
-        public async Task<object> GetPortfolioActivity(OktoClient oc)
+        public async Task<List<UserPortfolioActivity>> GetPortfolioActivity(OktoClient oc)
         {
             Loader.ShowLoader();
 
-            if (oc == null)
-            {
-                ResponsePanel.SetResponse("You are not logged In!");
-                return "You are not logged In!";
-            }
-
-            if (!oc.IsLoggedIn())
-            {
-                ResponsePanel.SetResponse("You are not logged In!");
-                return "You are not logged In!";
-            }
-
             try
             {
-                return await BffClientRepository.GetBffClientRepository().GetPortfolioActivity();
+                return await BffClientRepository.GetPortfolioActivity();
             }
             catch (Exception error)
             {
@@ -65,26 +41,13 @@ namespace OktoSDK
             }
         }
 
-        public async Task<object> GetPortfolioNFT(OktoClient oc)
+        public async Task<List<UserNFTBalance>> GetPortfolioNFT(OktoClient oc)
         {
             Loader.ShowLoader();
 
-
-            if (oc == null)
-            {
-                ResponsePanel.SetResponse("You are not logged In!");
-                return "You are not logged In!";
-            }
-
-            if (!oc.IsLoggedIn())
-            {
-                ResponsePanel.SetResponse("You are not logged In!");
-                return "You are not logged In!";
-            }
-
             try
             {
-                return await BffClientRepository.GetBffClientRepository().GetPortfolioNft();
+                return await BffClientRepository.GetPortfolioNft();
             }
             catch (Exception error)
             {

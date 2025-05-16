@@ -1,9 +1,10 @@
 using System;
 using System.Threading.Tasks;
-using UnityEngine;
 using System.Text;
 using Newtonsoft.Json;
 using Nethereum.Signer;
+using OktoSDK.Auth;
+using OktoSDK.BFF;
 
 /*
  * OktoClient Class
@@ -68,7 +69,7 @@ namespace OktoSDK
             _userDetails = new UserDetails
             {
                 env = userDetails.env,
-                whatsapp = userDetails.whatsapp, 
+                details = userDetails.details, 
                 sessionData = userDetails.sessionData
             };
 

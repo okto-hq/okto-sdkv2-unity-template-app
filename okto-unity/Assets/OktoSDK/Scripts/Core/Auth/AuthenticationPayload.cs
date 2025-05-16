@@ -1,8 +1,8 @@
-﻿using System;
+using System;
 using System.Threading.Tasks;
 using Nethereum.Signer;
-using UnityEngine;
 using Newtonsoft.Json;
+using OktoSDK.BFF;
 using Org.BouncyCastle.Crypto.Digests;
 
 /*
@@ -18,7 +18,7 @@ using Org.BouncyCastle.Crypto.Digests;
  * - Uses Keccak-256 hashing to create a secure message payload.
  * - Signs the authentication data using Ethereum message signing.
  * - Generates two signatures:
- *   1. `SessionPkClientSignature` - Signed using the client’s private key.
+ *   1. `SessionPkClientSignature` - Signed using the client�s private key.
  *   2. `SessionDataUserSignature` - Signed using the user's session private key.
  *
  * Methods:
@@ -36,7 +36,7 @@ using Org.BouncyCastle.Crypto.Digests;
  * - Ensure `clientPriv` and `sessionKey.PrivateKeyHexWith0x` are securely managed to prevent exposure.
  */
 
-namespace OktoSDK
+namespace OktoSDK.Auth
 {
     public class AuthenticationPayload
     {
@@ -117,6 +117,7 @@ namespace OktoSDK
         }
 }
 }
+
 
 
 
