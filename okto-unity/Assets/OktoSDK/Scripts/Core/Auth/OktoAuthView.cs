@@ -79,8 +79,6 @@ namespace OktoSDK.Auth
                 PlayerPrefs.SetString("ClientPrivateKey", clientPrivateKey.text);
                 PlayerPrefs.SetString("ClientSWA", clientSWA.text);
 
-                CustomLogger.Log($"Saved ClientPrivateKey: {clientPrivateKey.text}");
-                CustomLogger.Log($"Saved ClientSWA: {clientSWA.text}");
             }
             else
             {

@@ -195,11 +195,11 @@ The SDK has been reorganized into the following main folders:
             var orderPrefab = orderObj.AddComponent<OrderPrefab>();
             var chainManager = transactionObj.AddComponent<ChainManager>();
             var transactionManager = transactionObj.AddComponent<TransactionManager>();
-            var callDataDecoder = smartContractObj.AddComponent<CallDataDecoder>();
+            var callDataDecoder = smartContractObj.AddComponent<Decoding>();
             var prefabManager = transactionObj.AddComponent<PrefabManager>();
             
             // 3. Add the main feature manager
-            var featureManager = oktoSDK.AddComponent<OktoFeatureManager>();
+            //var featureManager = oktoSDK.AddComponent<OktoFeatureManager>();
             
             // 4. Configure references
             // Set up references between components

@@ -1,7 +1,6 @@
 using UnityEngine;
 using UnityEngine.UI;
 using System;
-using System.Collections.Generic;
 using Newtonsoft.Json;
 using System.Collections;
 
@@ -9,9 +8,8 @@ namespace OktoSDK.OnRamp
 {
     public class OnRampWebViewController : MonoBehaviour
     {
-        private WebViewObject webViewObject;
-        private bool isInjected;
-        private HashSet<string> processedMessageIds = new HashSet<string>();
+        public WebViewObject webViewObject;
+        public bool isInjected;
         public static OnRampWebViewController _instance;
 
         [SerializeField] private HomeController homeController;
@@ -39,7 +37,6 @@ namespace OktoSDK.OnRamp
             {
                 CustomLogger.Log($"[WebView] Initializing WebView with URL: {url}");
                 isInjected = false;
-                processedMessageIds.Clear();
                 webViewObject = gameObject.AddComponent<WebViewObject>();
 
                 webViewObject.Init(
@@ -54,48 +51,48 @@ namespace OktoSDK.OnRamp
                     started: (msg) =>
                     {
 #if UNITY_EDITOR || UNITY_ANDROID || (UNITY_EDITOR && UNITY_IOS)
-                if (!isInjected)
+                        if (!isInjected)
                         {
                             CustomLogger.Log("[WebView] Injecting Tokens and JS...");
                             InjectJavaScript();
                             isInjected = true;
                         }
 #endif
-            },
+                    },
                     ld: (msg) =>
                     {
                         InjectAuthAndDeviceToken(authToken, deviceToken);
+        
                         CustomLogger.Log($"[WebView] Page Loaded: {msg}");
-
-                        int chunkSize = 2000;
-                        for (int i = 0; i < msg.Length; i += chunkSize)
-                        {
-                            string chunk = msg.Substring(i, Mathf.Min(chunkSize, msg.Length - i));
-                            CustomLogger.Log($"[WebView] Page Loaded Part: {chunk}");
-                        }
                     },
-#if UNITY_ANDROID
+#if !UNITY_EDITOR && UNITY_ANDROID
             androidForceDarkMode: 1
-#elif UNITY_IOS
+#endif
+
+#if !UNITY_EDITOR && UNITY_IOS
             enableWKWebView: true,
             wkContentMode: 1,
             wkAllowsLinkPreview: true,
-            wkAllowsBackForwardNavigationGestures: true,
-            separated: true
-#elif UNITY_EDITOR
-            separated: true
+            wkAllowsBackForwardNavigationGestures: true
 #endif
-        );
 
+#if UNITY_EDITOR
+                    separated: true
+#endif
+                    );
+ 
                 webViewObject.ClearCache(true);
                 webViewObject.ClearCookies();
                 webViewObject.SetInteractionEnabled(true);
                 webViewObject.SetAlertDialogEnabled(true);
+
                 webViewObject.SetMargins(0, 0, 0, 0);
                 webViewObject.SetURLPattern("*", ".*", ".*");
                 webViewObject.LoadURL(url);
+
                 webViewObject.SetVisibility(true);
                 webViewObject.GetComponent<Image>().enabled = true;
+
                 Loader.DisableLoader();
             }
             catch (Exception e)

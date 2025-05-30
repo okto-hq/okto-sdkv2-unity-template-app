@@ -33,12 +33,12 @@ namespace OktoSDK.BFF
         {
             if (Instance == null)
             {
-                Debug.LogError("GoogleAuthManager.Instance is null. Please ensure an instance is created.");
+                CustomLogger.LogError("GoogleAuthManager.Instance is null. Please ensure an instance is created.");
                 return;
             }
             if (string.IsNullOrEmpty(url))
             {
-                Debug.LogWarning("HandleDeeplinkUrl: URL is null or empty.");
+                CustomLogger.LogWarning("HandleDeeplinkUrl: URL is null or empty.");
                 return;
             }
             try
@@ -47,7 +47,7 @@ namespace OktoSDK.BFF
                 int hashIndex = url.IndexOf('#');
                 if (hashIndex == -1 || hashIndex == url.Length - 1)
                 {
-                    Debug.LogWarning("HandleDeeplinkUrl: No fragment found in URL.");
+                    CustomLogger.LogWarning("HandleDeeplinkUrl: No fragment found in URL.");
                     return;
                 }
                 string fragment = url.Substring(hashIndex + 1);
@@ -60,15 +60,15 @@ namespace OktoSDK.BFF
                     if (kv.Length == 2 && kv[0] == "id_token")
                     {
                         IdToken = Uri.UnescapeDataString(kv[1]);
-                        Debug.Log($"Extracted id_token: {IdToken}");
+                        CustomLogger.Log($"Extracted id_token: {IdToken}");
                         return;
                     }
                 }
-                Debug.LogWarning("HandleDeeplinkUrl: id_token not found in fragment.");
+                CustomLogger.LogWarning("HandleDeeplinkUrl: id_token not found in fragment.");
             }
             catch (Exception ex)
             {
-                Debug.LogError($"HandleDeeplinkUrl: Exception occurred: {ex.Message}");
+                CustomLogger.LogError($"HandleDeeplinkUrl: Exception occurred: {ex.Message}");
             }
         }
     }

@@ -1,6 +1,7 @@
 using Newtonsoft.Json;
 using OktoSDK.Auth;
 using System;
+using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
 using static OktoSDK.LoginOAuthDataModels;
@@ -15,14 +16,40 @@ namespace OktoSDK
         private EmailAuthentication emailAuthentication;
         [SerializeField]
         private GoogleAuthManager googleAuthManager;
+        [SerializeField]
+        private DeeplinkPasteHandler deeplinkPasteHandler;
+
+        [Header("Theme Configuration")]
+        [SerializeField]
+        [Tooltip("Reference to the theme ScriptableObject. Create one using Assets > Create > Okto > OnboardingTheme")]
+        private OnboardingTheme themeConfig;
+        
+        [SerializeField]
+        [Tooltip("Reference to a theme component on this GameObject (takes precedence over themeConfig if assigned)")]
+        private OnboardingThemeComponent themeComponent;
 
         private WebViewObject webViewObject;
 
         private void OnEnable()
         {
             GoogleAuthManager.OnFetchedToken += OAuthLogin;
+            
+            // Disable DeeplinkPasteHandler by default
+            if (deeplinkPasteHandler != null)
+            {
+                deeplinkPasteHandler.DisableGoogleLogin();
+                CustomLogger.Log("DeeplinkPasteHandler Google login disabled by default");
+            }
+            
+            // Ensure we have a theme config
+            if (themeConfig == null && themeComponent == null)
+            {
+                CustomLogger.LogWarning("No theme configuration assigned. UI customization will use default values.");
+                // Try to get the theme component from this GameObject if not explicitly assigned
+                themeComponent = GetComponent<OnboardingThemeComponent>();
+            }
         }
-
+        
         private string GetBuildUrl()
         {
             switch (OktoAuthManager.GetOktoClientConfig().Environment.ToUpper())
@@ -31,6 +58,8 @@ namespace OktoSDK
                     return "https://sandbox-onboarding.okto.tech";
                 case "STAGING":
                     return "https://onboarding.oktostage.com";
+                case "PRODUCTION":
+                    return "https://onboarding.okto.tech";
                 default:
                     return "";
             }
@@ -42,14 +71,20 @@ namespace OktoSDK
 
             try
             {
+
                 webViewObject = gameObject.AddComponent<WebViewObject>();
 
                 webViewObject.Init(
                     cb: (msg) => OnMessageReceived(msg),
+                    started: (msg) =>
+                    {
+#if UNITY_EDITOR || UNITY_ANDROID || (UNITY_EDITOR && UNITY_IOS)
+                            CustomLogger.Log("[WebView] Injecting Tokens and JS...");
+                            InjectJavaScript();
+#endif
+                    },
                     ld: (msg) =>
                     {
-                        CustomLogger.Log($"Page Loaded: {msg}");
-                        InjectJavaScript();
                     },
 
 #if !UNITY_EDITOR && UNITY_ANDROID
@@ -84,9 +119,10 @@ namespace OktoSDK
         {
             try
             {
-                CustomLogger.Log($"Message Received: {message}");
+                CustomLogger.Log($"Message Received (encoded): {message}");
                 string safeMessage = message.Replace("+", "%2B");
                 string decodedMessage = UnityEngine.Networking.UnityWebRequest.UnEscapeURL(safeMessage);
+                CustomLogger.Log($"Message Received (decoded): {decodedMessage}");
 
                 WebViewRequestDataModel requestModel = JsonConvert.DeserializeObject<WebViewRequestDataModel>(decodedMessage);
 
@@ -126,6 +162,10 @@ namespace OktoSDK
             {
                 case "close_webview":
                     CloseWebView();
+                    break;
+
+                case "ui_config":
+                    //HandleUiConfig(webViewRequestModel);
                     break;
 
                 default:
@@ -222,7 +262,16 @@ namespace OktoSDK
 
         private void HandleGoogleLogin(WebViewRequestDataModel webViewRequestModel)
         {
+            CloseWebView();
+
             CustomLogger.Log("HandleGoogleLogin");
+
+            // Enable DeeplinkPasteHandler for Google authentication
+            if (deeplinkPasteHandler != null)
+            {
+                deeplinkPasteHandler.EnableGoogleLogin();
+                CustomLogger.Log("DeeplinkPasteHandler enabled for Google login");
+            }
 
             googleAuthManager.LoginUsingGoogleAuth();
         }
@@ -437,6 +486,13 @@ namespace OktoSDK
 
         private void CloseWebView()
         {
+            // Disable DeeplinkPasteHandler when closing webview
+            if (deeplinkPasteHandler != null)
+            {
+                deeplinkPasteHandler.DisableGoogleLogin();
+                CustomLogger.Log("DeeplinkPasteHandler Google login disabled on webview close");
+            }
+
             if (webViewObject != null)
             {
                 webViewObject.GetComponent<Image>().enabled = false;
@@ -446,7 +502,6 @@ namespace OktoSDK
             }
 
             Screen.orientation = Environment.GetDefaulOrientation();
-
         }
 
         private void OnApplicationQuit()
@@ -469,51 +524,168 @@ namespace OktoSDK
             SendMessageToWebView(jsonData);
         }
 
+
         private void InjectJavaScript()
         {
             string js = @"
-            	(function() {
-                	window.unityBridge = {
-                    	postMessage: function(msg) {
-                        	try {
-                            	msg = (typeof msg === 'string') ? msg : JSON.stringify(msg);
-                            	msg = encodeURIComponent(msg); // Always encode message
-                            	if (window.Unity && typeof Unity.call === 'function') {
-                                	Unity.call(msg);  // Android specific
-                            	} else if (window.webkit?.messageHandlers?.unityControl) {
-                                	window.webkit.messageHandlers.unityControl.postMessage(msg);  // iOS specific
-                            	} else {
-                                	console.error('Unity bridge not found');
-                            	}
-                        	} catch (e) {
-                            	console.error('Failed to send message to Unity:', e);
-                        	}
-                    	}
-                	};
+    (function () {
+        const earlyQueue = [];
 
-                	globalThis.requestChannel = globalThis.requestChannel || {
-                    	postMessage: function(msg) {
-                        	console.log('requestChannel Event from WebView:', msg);
-                        	try {
-                            	let parsedMsg = (typeof msg === 'string') ? JSON.parse(msg) : msg;
-                            	window.unityBridge.postMessage(parsedMsg);
-                        	} catch (e) {
-                            	console.error('Error formatting requestChannel message:', e);
-                        	}
-                    	}
-                	};
-                	console.log('Unity WebView bridge initialized for Android and iOS');
-            	})();
-        	";
+        function sendToUnity(msg) {
+            try {
+                const encodedMsg = encodeURIComponent(
+                    typeof msg === 'string' ? msg : JSON.stringify(msg)
+                );
+                if (window.Unity && typeof Unity.call === 'function') {
+                    Unity.call(encodedMsg); // Android
+                } else if (window.webkit?.messageHandlers?.unityControl) {
+                    window.webkit.messageHandlers.unityControl.postMessage(encodedMsg); // iOS
+                } else {
+                    console.warn('No bridge found');
+                }
+            } catch (e) {
+                console.error('Failed to send to Unity:', e);
+            }
+        }
+
+        window.unityBridge = {
+            postMessage: sendToUnity
+        };
+
+        const proxyChannel = {
+            postMessage: function(msg) {
+                console.log('[Early] Queued message:', msg);
+                earlyQueue.push(msg);
+            }
+        };
+
+        if (!globalThis.requestChannel) {
+            globalThis.requestChannel = proxyChannel;
+        }
+
+        // Actual channel
+        setTimeout(function () {
+            globalThis.requestChannel = {
+                postMessage: function (msg) {
+                    console.log('[Live] requestChannel Event:', msg);
+                    try {
+                        let parsed = typeof msg === 'string' ? JSON.parse(msg) : msg;
+                        window.unityBridge.postMessage(parsed);
+                    } catch (e) {
+                        console.error('Error in requestChannel:', e);
+                    }
+                }
+            };
+
+            // Flush queued messages
+            for (let m of earlyQueue) {
+                globalThis.requestChannel.postMessage(m);
+            }
+
+            console.log('Unity WebView bridge injected and queue flushed');
+        }, 0); // Next tick
+
+    })();
+    ";
 
             webViewObject.EvaluateJS(js);
         }
 
+
         public void SendMessageToWebView(string message)
         {
+            // Escape single quotes (') in the message for JavaScript string
+            message = message.Replace("'", "\\'");
+            
             string js = $"globalThis.responseChannel?.('{message}');";
             webViewObject.EvaluateJS(js);
             CustomLogger.Log($"Message sent to WebView: {message}");
+        }
+
+        void HandleUiConfig(WebViewRequestDataModel webViewRequestModel)
+        {
+            try
+            {
+                // Check if we have a themeComponent first (it takes precedence)
+                if (themeComponent != null)
+                {
+                    var config = themeComponent.GetWebUIConfig();
+                    string configJson = JsonConvert.SerializeObject(config, 
+                        new JsonSerializerSettings { 
+                            StringEscapeHandling = StringEscapeHandling.EscapeHtml,
+                            Formatting = Formatting.None 
+                        });
+                    
+                    string json = $"{{\"id\":\"{webViewRequestModel.Id}\",\"method\":\"{webViewRequestModel.Method}\",\"data\":{{\"type\":\"ui_config\",\"config\":{configJson}}}}}";
+                    CustomLogger.Log("Sending UI config response from theme component");
+                    SendMessageToWebView(json);
+                    return;
+                }
+                
+                // If no theme component is available, check for themeConfig scriptable object
+                if (themeConfig == null)
+                {
+                    // Create a default AppearanceConfig
+                    var defaultConfig = new AppearanceConfig
+                    {
+                        version = "1.0.0",
+                        appearance = new AppearanceSettings
+                        {
+                            themeName = "light",
+                            theme = new ThemeSettings()
+                        },
+                        vendor = new VendorSettings
+                        {
+                            name = "ExampleApp",
+                            logo = "https://example.com/logo.svg"
+                        },
+                        loginOptions = new LoginOptions()
+                    };
+                    
+                    var defaultConfigObj = new
+                    {
+                        version = defaultConfig.version,
+                        appearance = new
+                        {
+                            themeName = defaultConfig.appearance.themeName,
+                            theme = defaultConfig.appearance.theme.GetCssProperties()
+                        },
+                        vendor = defaultConfig.vendor,
+                        loginOptions = defaultConfig.loginOptions
+                    };
+                    
+                    string configJson = JsonConvert.SerializeObject(defaultConfigObj, 
+                        new JsonSerializerSettings { 
+                            StringEscapeHandling = StringEscapeHandling.EscapeHtml,
+                            Formatting = Formatting.None 
+                        });
+                        
+                    string json = $"{{\"id\":\"{webViewRequestModel.Id}\",\"method\":\"{webViewRequestModel.Method}\",\"data\":{{\"type\":\"ui_config\",\"config\":{configJson}}}}}";
+                    CustomLogger.Log("Sending default UI config response (no theme config assigned)");
+                    SendMessageToWebView(json);
+                    return;
+                }
+                
+                // Get config from the theme scriptable object
+                var themeConfigObj = themeConfig.GetWebUIConfig();
+                string themeConfigJson = JsonConvert.SerializeObject(themeConfigObj, 
+                    new JsonSerializerSettings { 
+                        StringEscapeHandling = StringEscapeHandling.EscapeHtml,
+                        Formatting = Formatting.None 
+                    });
+                    
+                string responseJson = $"{{\"id\":\"{webViewRequestModel.Id}\",\"method\":\"{webViewRequestModel.Method}\",\"data\":{{\"type\":\"ui_config\",\"config\":{themeConfigJson}}}}}";
+                
+                CustomLogger.Log("Sending UI config response from theme scriptable object");
+                SendMessageToWebView(responseJson);
+            }
+            catch (Exception ex)
+            {
+                CustomLogger.LogError($"Error generating UI config: {ex.Message}");
+                // Send a minimal response to avoid breaking the UI
+                string fallbackJson = $"{{\"id\":\"{webViewRequestModel.Id}\",\"method\":\"{webViewRequestModel.Method}\",\"data\":{{\"type\":\"ui_config\",\"config\":{{\"version\":\"1.0.0\"}}}}}}";
+                SendMessageToWebView(fallbackJson);
+            }
         }
     }
 
@@ -528,6 +700,9 @@ namespace OktoSDK
 
         [JsonProperty("data")]
         public LoginRequestData Data { get; set; }
+
+        [JsonProperty("config")]
+        public object config;
 
         [JsonProperty("error")]
         public string error;

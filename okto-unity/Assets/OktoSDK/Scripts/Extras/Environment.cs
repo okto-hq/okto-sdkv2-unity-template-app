@@ -38,7 +38,7 @@ namespace OktoSDK
         {
             if (_instance == null)
             {
-                Debug.LogError("Environment is not initialized.");
+                CustomLogger.LogError("Environment is not initialized.");
                 return string.Empty;
             }
             return _instance.tokenId;
@@ -48,7 +48,7 @@ namespace OktoSDK
         {
             if (_instance == null)
             {
-                Debug.LogError("Environment is not initialized.");
+                CustomLogger.LogError("Environment is not initialized.");
                 return ScreenOrientation.Portrait;
             }
             return _instance.defaulOrientation;
@@ -58,7 +58,7 @@ namespace OktoSDK
         {
             if (_instance == null)
             {
-                Debug.LogError("Environment is not initialized.");
+                CustomLogger.LogError("Environment is not initialized.");
                 return false;
             }
             return _instance.isManually;
@@ -68,7 +68,7 @@ namespace OktoSDK
         {
             if (_instance == null)
             {
-                Debug.LogError("Environment is not initialized.");
+                CustomLogger.LogError("Environment is not initialized.");
                 return false;
             }
             return _instance.isAutoLoginEnabled;
@@ -78,16 +78,20 @@ namespace OktoSDK
         {
             if (_instance == null)
             {
-                Debug.LogError("Environment is not initialized.");
+                CustomLogger.LogError("Environment is not initialized.");
                 return string.Empty;
             }
             if (env.Equals(OktoEnv.SANDBOX))
             {
                 return _instance.clientDetails[0].clientSwa;
             }
-            else
+            else if (env.Equals(OktoEnv.STAGING))
             {
                 return _instance.clientDetails[1].clientSwa;
+            }
+            else
+            {
+                return _instance.clientDetails[2].clientSwa;
             }
         }
 
@@ -95,16 +99,20 @@ namespace OktoSDK
         {
             if (_instance == null)
             {
-                Debug.LogError("Environment is not initialized.");
+                CustomLogger.LogError("Environment is not initialized.");
                 return string.Empty;
             }
             if (env.Equals(OktoEnv.SANDBOX))
             {
                 return _instance.clientDetails[0].clientPrivateKey;
             }
-            else
+            else if (env.Equals(OktoEnv.STAGING))
             {
                 return _instance.clientDetails[1].clientPrivateKey;
+            }
+            else
+            {
+                return _instance.clientDetails[2].clientPrivateKey;
             }
         }
 
@@ -112,7 +120,7 @@ namespace OktoSDK
         {
             if (_instance == null)
             {
-                Debug.LogError("Environment is not initialized.");
+                CustomLogger.LogError("Environment is not initialized.");
                 return string.Empty;
             }
             return _instance.googleWebClientId;
@@ -122,7 +130,7 @@ namespace OktoSDK
         {
             if (_instance == null)
             {
-                Debug.LogError("Environment is not initialized.");
+                CustomLogger.LogError("Environment is not initialized.");
                 return false;
             }
             return _instance.isLogEnabled;

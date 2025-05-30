@@ -18,9 +18,14 @@ namespace OktoSDK.OnRamp
             CustomLogger.Log("authToken" + authToken);
             using (UnityWebRequest request = UnityWebRequest.Get(apiUrl))
             {
-                request.SetRequestHeader("accept", "*/*");
-                request.SetRequestHeader("authorization", "Bearer " + authToken);
-                request.SetRequestHeader("content-type", "application/json");
+                request.SetRequestHeader("Accept", "application/json, text/plain, */*");
+                request.SetRequestHeader("Authorization", "Bearer " + authToken);
+                request.SetRequestHeader("Content-Type", "application/json");
+                string curlCommand = $"curl -X GET \"{apiUrl}\" " +
+                                     $"-H \"Accept: application/json, text/plain, */*\" " +
+                                     $"-H \"Authorization: Bearer {authToken}\" " +
+                                     $"-H \"Content-Type: application/json\"";
+                CustomLogger.Log("CURL Equivalent:\n" + curlCommand);
 
                 var asyncOperation = request.SendWebRequest();
 

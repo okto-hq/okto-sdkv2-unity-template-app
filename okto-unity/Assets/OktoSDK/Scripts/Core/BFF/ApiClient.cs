@@ -97,7 +97,7 @@ namespace OktoSDK.BFF
                 request.SetRequestHeader("Content-Type", "application/json");
 
                 // Get and set authorization token
-                string token = await oktoClient.GetAuthorizationToken();
+                string token = oktoClient.GetAuthorizationToken();
                 if (token == null)
                 {
                     ResponsePanel.SetResponse("You are not Logged In!");

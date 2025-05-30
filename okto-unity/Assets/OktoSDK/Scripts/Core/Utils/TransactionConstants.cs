@@ -71,43 +71,25 @@ namespace OktoSDK
 
         public static async Task<UserOpNamespace.JsonRpcResponse<UserOpNamespace.UserOperationGasPriceResult>> GetUserOperationGasPriceAsync()
         {
-            //try
-            //{
-                string authToken = await OktoAuthManager.GetOktoClient().GetAuthorizationToken();
-                string gatewayUrl = OktoAuthManager.GetOktoClient().Env.GatewayBaseUrl + "/rpc";
-
-                var request = new JsonRpcRequest
-                {
-                    method = "getUserOperationGasPrice",
-                    jsonrpc = "2.0",
-                    id = Guid.NewGuid().ToString(),
-                    @params = new object[] { }
-                };
-
-                string jsonBody = JsonConvert.SerializeObject(request, new JsonSerializerSettings
-                {
-                    Formatting = Formatting.None,
-                    NullValueHandling = NullValueHandling.Ignore
-                });
+            try
+            {
+                string authToken = OktoAuthManager.GetOktoClient().GetAuthorizationToken();
+                string gatewayUrl = OktoAuthManager.GetOktoClient().Env.BffBaseUrl + "/api/oc/v1/gas-values";
 
                 // Log the cURL command
-                string curl = $"curl -X POST \"{gatewayUrl}\" " +
+                string curl = $"curl -X GET \"{gatewayUrl}\" " +
                               $"-H \"Accept: application/json, text/plain, */*\" " +
-                              $"-H \"Content-Type: application/json\" " +
-                              $"-H \"Authorization: Bearer {authToken}\" " +
-                              $"--data '{jsonBody.Replace("'", "\\'")}'";
+                              $"-H \"Authorization: Bearer {authToken}\"";
                 CustomLogger.Log("[cURL]\n" + curl);
 
-                using (UnityWebRequest webRequest = new UnityWebRequest(gatewayUrl, "POST"))
+                using (UnityWebRequest webRequest = UnityWebRequest.Get(gatewayUrl))
                 {
                     webRequest.SetRequestHeader("Accept", "application/json, text/plain, */*");
-                    webRequest.SetRequestHeader("Content-Type", "application/json");
                     webRequest.SetRequestHeader("Authorization", $"Bearer {authToken}");
-                    webRequest.uploadHandler = new UploadHandlerRaw(Encoding.UTF8.GetBytes(jsonBody));
                     webRequest.downloadHandler = new DownloadHandlerBuffer();
                     webRequest.timeout = 60;
 
-                    CustomLogger.Log($"Sending request: {jsonBody}");
+                    CustomLogger.Log("Sending GET request...");
 
                     await webRequest.SendWebRequest();
 
@@ -116,12 +98,12 @@ namespace OktoSDK
 
                     return JsonConvert.DeserializeObject<UserOpNamespace.JsonRpcResponse<UserOpNamespace.UserOperationGasPriceResult>>(responseText);
                 }
-            //}
-            //catch (Exception ex)
-            //{
-            //    CustomLogger.LogError($"Error fetching gas price: {ex.Message}");
-            //    throw;
-            //}
+            }
+            catch (Exception ex)
+            {
+                CustomLogger.LogError($"Error fetching gas price: {ex.Message}");
+                throw;
+            }
         }
 
     }

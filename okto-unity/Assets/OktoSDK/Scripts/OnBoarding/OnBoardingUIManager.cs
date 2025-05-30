@@ -28,7 +28,7 @@ namespace OktoSDK
 
         void OnClickOnBoardingBtn()
         {
-            OktoAuthManager.SetConfig();
+            //OktoAuthManager.SetConfig();
             onboardingWebview.OpenOnBoardingScreen();
         }
 

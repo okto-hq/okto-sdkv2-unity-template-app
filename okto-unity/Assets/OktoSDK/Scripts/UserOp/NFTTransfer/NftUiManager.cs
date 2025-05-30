@@ -4,7 +4,6 @@ using Newtonsoft.Json;
 using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
-using OktoSDK.Models.Wallet;
 using OktoSDK.BFF;
 using OktoSDK.Auth;
 

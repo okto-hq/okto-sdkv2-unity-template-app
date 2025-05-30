@@ -212,7 +212,7 @@ namespace OktoSDK
             paddedNonce = PadHex(paddedNonce, 32).ToLowerInvariant();
 
             // Fetch gas price info
-            OktoSDK.UserOp.UserOperationGasPriceResult gasPriceResult = (await TransactionConstants.GetUserOperationGasPriceAsync()).Result;
+            OktoSDK.UserOp.UserOperationGasPriceResult gasPriceResult = (await TransactionConstants.GetUserOperationGasPriceAsync()).data;
 
             return new UserOpType
             {

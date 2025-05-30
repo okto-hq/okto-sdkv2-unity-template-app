@@ -6,12 +6,12 @@ EditorBuildSettings:
   serializedVersion: 2
   m_Scenes:
   - enabled: 1
-    path: Assets/OktoSDK/Demo/OktoDemo.unity
+    path: Assets/OktoSDK/Scene/OktoDemo.unity
     guid: 9fc0d4010bbf28b4594072e72b8655ab
   - enabled: 1
-    path: Assets/OktoSDK/Demo/Demo1.unity
+    path: Assets/OktoSDK/Scene/Demo1.unity
     guid: dadbb3285db7cff419862d9660c14413
   - enabled: 1
-    path: Assets/OktoSDK/Demo/EmptyScene.unity
+    path: Assets/OktoSDK/Scene/EmptyScene.unity
     guid: c7834612bef8e824b9c023427dc6771b
   m_configObjects: {}

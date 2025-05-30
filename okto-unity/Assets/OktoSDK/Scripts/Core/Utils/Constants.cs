@@ -20,7 +20,7 @@ namespace OktoSDK
 
         public static readonly EnvConfig SandboxEnvConfig = new EnvConfig
         {
-            GatewayBaseUrl = "https://sandbox-okto-gateway.oktostage.com",
+            //GatewayBaseUrl = "https://sandbox-okto-gateway.oktostage.com",
             BffBaseUrl = "https://sandbox-api.okto.tech",
             PaymasterAddress = "0x74324fA6Fa67b833dfdea4C1b3A9898574d076e3",
             JobManagerAddress = "0x0543aD80b41C5f5956d34503668CDb965deCB617",
@@ -30,16 +30,29 @@ namespace OktoSDK
             LoginOAuth = "https://sandbox-onboarding.okto.tech/__/auth/handler",
         };
 
-        public static readonly EnvConfig ProductionEnvConfig = new EnvConfig
+        public static readonly EnvConfig StagingEnvConfig = new EnvConfig
         {
-            GatewayBaseUrl = "https://okto-gateway.oktostage.com",
+            //GatewayBaseUrl = "https://okto-gateway.oktostage.com",
             BffBaseUrl = "https://3p-bff.oktostage.com",
-            PaymasterAddress = "0xdAa292E9B9a6B287c84d636F3b65f4A5Dc787e3f",
-            JobManagerAddress = "0xb5e77f7Ff1ab31Fc1bE99F484DB62f01a6b93D4d",
-            EntryPointContractAdress = "0xec3F5f7a3f0e43e61D8711A90B8c8Fc59B9a88ba",
+            PaymasterAddress = "0xc2D31Cdc6EFd02F85Ab943c4587f8D60E6E15F9c",
+            JobManagerAddress = "0x57820589F31a9e4a34A0299Ea4aDe7c536139682",
+            EntryPointContractAdress = "0x322eF240AD89d19a50Ca092CF70De9603bf6778E",
             ChainId = 124736089,
             OnRampBaseUrl = "https://pay.oktostage.com",
             LoginOAuth = "https://onboarding.oktostage.com/__/auth/handler",
         };
+
+        public static readonly EnvConfig ProductionEnvConfig = new EnvConfig
+        {
+            //GatewayBaseUrl = "https://okto-gateway.okto.tech",
+            BffBaseUrl = "https://apigw.okto.tech",
+            PaymasterAddress = "0xB0E2BD2EFb99F982F8cCB8e6737A572B3B0eCE11",
+            JobManagerAddress = "0x7F1E1e98Dde775Fae0d340D3E5D28004Db58A0d3",
+            EntryPointContractAdress = "0x0b643Bcd21a72b10075F1938Ebebba6E077A1742",
+            ChainId = 8088,
+            OnRampBaseUrl = "https://pay.okto.tech",
+            LoginOAuth = "https://onboarding.okto.tech/__/auth/handler",
+        };
+
     }
 }

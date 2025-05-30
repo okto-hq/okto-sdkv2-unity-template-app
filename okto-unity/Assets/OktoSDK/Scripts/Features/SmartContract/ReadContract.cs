@@ -30,14 +30,20 @@ namespace OktoSDK.Features.SmartContract
 
         private void OnEnable()
         {
-            closeBtn.onClick.AddListener(ClosePanel);
-            readContractBtn.onClick.AddListener(OpenPanel);
+            if(closeBtn!= null)
+                closeBtn.onClick.AddListener(ClosePanel);
+
+            if (readContractBtn != null)
+                readContractBtn.onClick.AddListener(OpenPanel);
         }
 
         private void OnDisable()
         {
-            closeBtn.onClick.RemoveListener(ClosePanel);
-            readContractBtn.onClick.RemoveListener(OpenPanel);
+            if (closeBtn != null)
+                closeBtn.onClick.RemoveListener(ClosePanel);
+
+            if (readContractBtn != null)
+                readContractBtn.onClick.RemoveListener(OpenPanel);
         }
 
         void OpenPanel()
@@ -103,7 +109,7 @@ namespace OktoSDK.Features.SmartContract
                     throw new Exception($"Error parsing ABI: {ex.Message}");
                     //return;
                 }
-                string result = await ReadSmartContractAsync(abi, functionName, contractAddress, parameters);
+                string result = await ReadSmartContractAsync(networkDropdown.options[networkDropdown.value].text,abi, functionName, contractAddress, parameters);
                 UpdateResultText(result);
             }
             catch(Exception ex)
@@ -119,11 +125,11 @@ namespace OktoSDK.Features.SmartContract
             return Regex.Replace(input, @"[\n\r\\\"" ]", "").Trim();
         }
 
-        public async Task<string> ReadSmartContractAsync(string abi, string functionName, string contractAddress, string parameters = "")
+        public async Task<string> ReadSmartContractAsync(string selectedNetwork,string abi, string functionName, string contractAddress, string parameters = "")
         {
             try
             {
-                string network = networkDropdown.options[networkDropdown.value].text;
+                string network = selectedNetwork;
                 CustomLogger.Log($"Network: {network}");
 
                 // Check if URL is configured before using

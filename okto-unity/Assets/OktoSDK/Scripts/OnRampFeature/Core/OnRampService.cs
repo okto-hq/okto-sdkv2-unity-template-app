@@ -1,4 +1,4 @@
-using UnityEngine;
+﻿using UnityEngine;
 using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
@@ -55,7 +55,7 @@ namespace OktoSDK.OnRamp
         public async void StartOnRamp(string tokenId, WhitelistedToken whitelistedToken, HomeController homeController)
         {
             this.homeController = homeController;
-            AuthToken = await OktoAuthManager.GetOktoClient().GetAuthorizationToken();
+            AuthToken = OktoAuthManager.GetOktoClient().GetAuthorizationToken();
             try
             {
                 CustomLogger.Log($"Initiating add funds for token ID: {tokenId}");
@@ -165,7 +165,12 @@ namespace OktoSDK.OnRamp
             }
             if (data.type == "onMetaHandler")
             {
-                HandleMetaEvent(message);
+                HandleMetaEvent(message,webViewController);
+            }
+            else if (data.type == "onRampCompleted")
+            {
+                webViewController.CloseWebView();
+                ResponsePanel.SetResponse("Your transaction is Sucessfull.Your transaction might take a few minutes to complete!");
             }
             else
             {
@@ -187,7 +192,7 @@ namespace OktoSDK.OnRamp
                     webViewController.CloseWebView();
                     break;
                 case WebEvent.Url:
-                    HandleUrl(model);
+                    HandleUrl(model, webViewController);
                     break;
                 case WebEvent.RequestPermission:
                     HandleRequestPermission(model, webViewController);
@@ -204,24 +209,59 @@ namespace OktoSDK.OnRamp
             }
         }
 
-        //private WebViewObject kycWebView;
+        private WebViewObject kycWebView;
 
-        private void HandleUrl(WebEventModel model)
+
+
+        private void HandleUrl(WebEventModel model, OnRampWebViewController webViewController)
         {
-            CustomLogger.Log($"[Unity] URL event: {JsonConvert.SerializeObject(model.@params)}");
-
             string url = model.@params["url"]?.ToString();
-            if (!string.IsNullOrEmpty(url))
-            {
+            if (string.IsNullOrEmpty(url))
+                return;
 
+            webViewController.isInjected = false;
+            webViewController.webViewObject.LoadURL(url);
 
-#if UNITY_IOS && !UNITY_EDITOR
-    OpenInSafariView(url);
-#else
-                Application.OpenURL(url);
-#endif
-            }
+            //string url = model.@params["url"]?.ToString();
+            //if (string.IsNullOrEmpty(url))
+            //    return;
+
+            //CustomLogger.Log($"[Unity] URL event: {url}");
+
+            //if (kycWebView != null)
+            //{
+            //    Destroy(kycWebView.gameObject);
+            //    kycWebView = null;
+            //}
+
+            //GameObject webViewGO = new GameObject("KYCWebView");
+            //kycWebView = webViewGO.AddComponent<WebViewObject>();
+
+            //kycWebView.Init(
+            //    cb: (msg) => Debug.Log($"[WebView] Callback: {msg}"),
+            //    err: (msg) => Debug.LogError($"[WebView] Error: {msg}"),
+            //    started: (navUrl) => Debug.Log($"[WebView] Started loading: {navUrl}"),
+            //    ld: (navUrl) =>
+            //    {
+            //        Debug.Log($"[WebView] Finished loading: {navUrl}");
+
+            //// ✅ Check for final redirect URL
+            //if (navUrl.StartsWith("https://platform.onmeta.in/auth/aadhar-redirect") &&
+            //            navUrl.Contains("status=SUCCESS"))
+            //        {
+            //            Debug.Log("[WebView] Aadhaar verification success — closing WebView.");
+            //            Destroy(webViewGO);
+            //            kycWebView = null;
+            //        }
+            //    }
+            //);
+
+            //kycWebView.SetMargins(0, 0, 0, 0);
+            //kycWebView.SetVisibility(true);
+            //kycWebView.LoadURL(url);
         }
+
+
 
         private void HandleRequestPermission(WebEventModel model, OnRampWebViewController webViewController)
         {
@@ -323,7 +363,7 @@ namespace OktoSDK.OnRamp
                         case WebKeys.TransactionId:
                             if (homeController != null)
                             {
-                                AuthToken = await OktoAuthManager.GetOktoClient().GetAuthorizationToken();
+                                AuthToken = OktoAuthManager.GetOktoClient().GetAuthorizationToken();
                                 responseData = await homeController.GetTransactionToken(AuthToken, DeviceToken);
                                 responseDict[key] = responseData;
                             }
@@ -370,15 +410,17 @@ namespace OktoSDK.OnRamp
             }
         }
 
-        public void HandleMetaEvent(string json)
+        public void HandleMetaEvent(string json, OnRampWebViewController webViewController)
         {
             var metaEvent = JsonConvert.DeserializeObject<MetaEventModel>(json);
             if (metaEvent != null && metaEvent.detail.paymentStatus == "success")
             {
+                webViewController.CloseWebView();
                 ResponsePanel.SetResponse(JsonConvert.SerializeObject(metaEvent.detail, Formatting.Indented));
             }
             else if (metaEvent != null && metaEvent.detail.paymentStatus == "failed")
             {
+                webViewController.CloseWebView();
                 ResponsePanel.SetResponse(JsonConvert.SerializeObject(metaEvent.detail, Formatting.Indented));
             }
         }

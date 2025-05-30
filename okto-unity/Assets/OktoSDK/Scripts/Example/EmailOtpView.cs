@@ -21,28 +21,19 @@ namespace OktoSDK
 
         [SerializeField] private string lastToken;
 
-        void Test()
-        {
-            emailInput.text = "external-shubaangi.mishra@coindcx.com";
-        }
-
         private void OnEnable()
         {
             openBtn.onClick.AddListener(OpenEmailAuth);
             closeBtn.onClick.AddListener(CloseBtn);
-
             sendOtpBtn.onClick.AddListener(OnSendOtp);
             resendOtpBtn.onClick.AddListener(OnResendOtp);
             verifyOtpBtn.onClick.AddListener(OnVerifyOtp);
-
-            Test();
         }
 
         private void OnDisable()
         {
             openBtn.onClick.RemoveListener(OpenEmailAuth);
             closeBtn.onClick.RemoveListener(CloseBtn);
-
             sendOtpBtn.onClick.RemoveListener(OnSendOtp);
             resendOtpBtn.onClick.RemoveListener(OnResendOtp);
             verifyOtpBtn.onClick.RemoveListener(OnVerifyOtp);

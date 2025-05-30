@@ -36,13 +36,6 @@ namespace OktoSDK
         DateTime validUntil,
         DateTime? validAfter = null)
         {
-            CustomLogger.Log($"Generating paymaster data with:");
-            CustomLogger.Log($"clientSWA: {clientSWA}");
-            CustomLogger.Log($"nonce: {nonce}");
-            CustomLogger.Log($"validUntil: {validUntil}");
-            CustomLogger.Log($"validAfter: {validAfter}");
-            CustomLogger.Log($"clientPrivateKey: {clientPrivateKey}");
-
             // Convert validUntil to Unix timestamp
             var validUntilTimestamp = ((DateTimeOffset)validUntil).ToUnixTimeSeconds();
 

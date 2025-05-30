@@ -3,7 +3,7 @@ using OktoSDK.BFF;
 
 namespace OktoSDK.Auth
 {
-    public class JwtAuthenticate : IAuthenticate
+    public class JwtAuthenticate
     {
         public async Task<bool> Login(string jwtToken)
         {

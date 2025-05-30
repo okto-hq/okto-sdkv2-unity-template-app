@@ -81,9 +81,9 @@ namespace OktoSDK.Features.Transaction
                         // Parse the JSON response
                         var response = JsonConvert.DeserializeObject<BFF.JsonRpcResponse<ExecuteResult>>(txHashResult);
                         
-                        if (response?.result?.jobId != null)
+                        if (response?.data?.jobId != null)
                         {
-                            string txHash = response.result.jobId;
+                            string txHash = response.data.jobId;
                             
                             // Store the intent ID if available
                             if (txHash != null) 

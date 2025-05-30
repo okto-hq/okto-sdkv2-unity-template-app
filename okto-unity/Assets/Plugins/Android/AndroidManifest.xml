@@ -44,6 +44,11 @@
         <data android:scheme="https"
               android:host="sandbox-onboarding.okto.tech"
               android:pathPrefix="/__/auth/handler" />
+
+        <data android:scheme="https"
+              android:host="onboarding.okto.tech"
+              android:pathPrefix="/__/auth/handler" />
+        
       </intent-filter>
 
       <meta-data android:name="unityplayer.UnityActivity" android:value="true" />
