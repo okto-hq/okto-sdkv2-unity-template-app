@@ -60,7 +60,7 @@ namespace OktoSDK.OnRamp
             Loader.ShowLoader();
             try
             {
-                string authToken = await OktoAuthManager.GetOktoClient().GetAuthorizationToken();
+                string authToken = OktoAuthManager.GetOktoClient().GetAuthorizationToken();
                 List<WhitelistedToken> response = await SupportedOnRampToken.FetchStatus(authToken);
                 SuccessCallBack(response);
             }

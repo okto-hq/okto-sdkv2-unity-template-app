@@ -20,9 +20,9 @@ namespace OktoSDK
             else
             {
                 _authManager.Initialize(
-                    "sandbox",
-                    Environment.GetClientPrivateKey("sandbox"),
-                    Environment.GetClientSWA("sandbox")
+                    OktoEnv.SANDBOX,
+                    Environment.GetClientPrivateKey(OktoEnv.SANDBOX),
+                    Environment.GetClientSWA(OktoEnv.SANDBOX)
                 );
                 CustomLogger.Log("Auto-login is not enabled. Please log in manually.");
             }

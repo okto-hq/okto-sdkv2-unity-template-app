@@ -18,7 +18,7 @@ using Org.BouncyCastle.Crypto.Digests;
  * - Uses Keccak-256 hashing to create a secure message payload.
  * - Signs the authentication data using Ethereum message signing.
  * - Generates two signatures:
- *   1. `SessionPkClientSignature` - Signed using the client’s private key.
+ *   1. `SessionPkClientSignature` - Signed using the client?s private key.
  *   2. `SessionDataUserSignature` - Signed using the user's session private key.
  *
  * Methods:
@@ -48,19 +48,14 @@ namespace OktoSDK.Auth
             string clientPriv)
         {
             var nonce = Guid.NewGuid().ToString("D");
-            CustomLogger.Log($"Generated nonce: {nonce}");
-            CustomLogger.Log($"client: {client}");
-            //CustomLogger.Log($"clientSWA: {clientSWA}");
-            CustomLogger.Log($"client.Env.PaymasterAddress: {client.Env.PaymasterAddress}");
-            CustomLogger.Log($"clientPriv: {client.Env.PaymasterAddress}");
 
             var sessionData = new AuthSessionData
             {
                 Nonce = nonce,
                 ClientSWA = clientSWA,
                 SessionPk = sessionKey.UncompressedPublicKeyHexWith0x,
-                MaxPriorityFeePerGas = Constants.MaxPriorityFeePerGas,
-                MaxFeePerGas = Constants.MaxFeePerGas,
+                //MaxPriorityFeePerGas = Constants.MaxPriorityFeePerGas,
+                //MaxFeePerGas = Constants.MaxFeePerGas,
                 Paymaster = client.Env.PaymasterAddress,
                 PaymasterData = await PaymasterDataGenerator.Generate(
                     clientSWA,

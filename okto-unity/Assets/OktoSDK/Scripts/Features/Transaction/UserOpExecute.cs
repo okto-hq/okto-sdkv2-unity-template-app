@@ -46,25 +46,25 @@ namespace OktoSDK.Features.Transaction
             {
                 CustomLogger.Log($"UserOp being sent: {JsonConvert.SerializeObject(userOp, Formatting.Indented)}");
 
-                string authToken = await OktoAuthManager.GetOktoClient().GetAuthorizationToken();
+                string authToken = OktoAuthManager.GetOktoClient().GetAuthorizationToken();
                 GetCurlCommand(userOp, authToken);
 
-                var request = new JsonRpcRequest
-                {
-                    method = "execute",
-                    jsonrpc = "2.0",
-                    id = Guid.NewGuid().ToString(),
-                    @params = new object[] { userOp }
-                };
+                //var request = new JsonRpcRequest
+                //{
+                //    method = "execute",
+                //    jsonrpc = "2.0",
+                //    id = Guid.NewGuid().ToString(),
+                //    @params = new object[] { userOp }
+                //};
 
                 // Format JSON exactly like web version
-                string jsonBody = JsonConvert.SerializeObject(request, new JsonSerializerSettings
+                string jsonBody = JsonConvert.SerializeObject(userOp, new JsonSerializerSettings
                 {
                     Formatting = Formatting.None,
                     NullValueHandling = NullValueHandling.Ignore
                 });
 
-                using (UnityWebRequest webRequest = new UnityWebRequest(OktoAuthManager.GetOktoClient().Env.GatewayBaseUrl + "/rpc", "POST"))
+                using (UnityWebRequest webRequest = new UnityWebRequest(OktoAuthManager.GetOktoClient().Env.BffBaseUrl + "/api/oc/v1/execute", "POST"))
                 {
                     // Important: Set headers in correct order
                     webRequest.SetRequestHeader("Accept", "application/json, text/plain, */*");
@@ -75,7 +75,7 @@ namespace OktoSDK.Features.Transaction
                     webRequest.downloadHandler = new DownloadHandlerBuffer();
                     webRequest.timeout = 60; // 60 seconds timeout
 
-                    var json = JsonConvert.SerializeObject(request, new JsonSerializerSettings
+                    var json = JsonConvert.SerializeObject(userOp, new JsonSerializerSettings
                     {
                         NullValueHandling = NullValueHandling.Ignore
                     });
@@ -113,7 +113,7 @@ namespace OktoSDK.Features.Transaction
                 string jsonBody = JsonConvert.SerializeObject(request, Formatting.None);
 
                 // Build cURL command
-                var curlCommand = $@"curl -X POST '{OktoAuthManager.GetOktoClient().Env.GatewayBaseUrl} + ""/rpc""' \
+                var curlCommand = $@"curl -X POST '{OktoAuthManager.GetOktoClient().Env.BffBaseUrl} \
             -H 'Accept: application/json, text/plain, */*' \
             -H 'Content-Type: application/json' \
             -H 'Authorization: Bearer {authToken}' \
@@ -138,7 +138,7 @@ namespace OktoSDK.Features.Transaction
                 CustomLogger.Log("\n=== COMPLETE TRANSACTION PAYLOAD ===\n");
 
                 // 1. HTTP Request Details
-                CustomLogger.Log("URL: " + OktoAuthManager.GetOktoClient().Env.GatewayBaseUrl + "/rpc");
+                CustomLogger.Log("URL: " + OktoAuthManager.GetOktoClient().Env.BffBaseUrl);
                 CustomLogger.Log("Method: POST");
 
                 // 2. Headers

@@ -26,14 +26,6 @@ namespace OktoSDK
         }
 
         /// <summary>
-        /// Gets the Gateway base URL for API requests
-        /// </summary>
-        public static string GetGatewayBaseUrl()
-        {
-            return GetCurrentEnvConfig()?.GatewayBaseUrl;
-        }
-
-        /// <summary>
         /// Gets the Paymaster address
         /// </summary>
         public static string GetPaymasterAddress()

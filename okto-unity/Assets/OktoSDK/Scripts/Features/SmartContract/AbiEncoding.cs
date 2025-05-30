@@ -60,17 +60,28 @@ namespace OktoSDK.Features.SmartContract
 
         private void OnEnable()
         {
-             encodeButton.onClick.AddListener(OnEncodeButtonClick);
-             closeButton.onClick.AddListener(ClosePanel);
-             encodePanelBtn.onClick.AddListener(OpenPanel);
+            if (encodeButton != null)
+                encodeButton.onClick.AddListener(OnEncodeButtonClick);
+
+            if (closeButton != null)
+                closeButton.onClick.AddListener(ClosePanel);
+
+            if (encodePanelBtn != null)
+                encodePanelBtn.onClick.AddListener(OpenPanel);
         }
 
         private void OnDisable()
         {
-            encodeButton.onClick.RemoveListener(OnEncodeButtonClick);
-            closeButton.onClick.RemoveListener(ClosePanel);
-            closeButton.onClick.RemoveListener(ClosePanel);
+            if (encodeButton != null)
+                encodeButton.onClick.RemoveListener(OnEncodeButtonClick);
+
+            if (closeButton != null)
+                closeButton.onClick.RemoveListener(ClosePanel);
+
+            if (encodePanelBtn != null)
+                encodePanelBtn.onClick.RemoveListener(OpenPanel);
         }
+
 
 
         public void OnEncodeButtonClick()

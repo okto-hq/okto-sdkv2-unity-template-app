@@ -1,12 +1,4 @@
-// -----------------------------------------------------------------------------
-// UserDetailsFetcher.cs
-// Utility for retrieving stored user email and phone number from Okto SDK.
-// Author: [Your Name]
-// Created: 2024-06-09
-// License: [Specify License]
-// -----------------------------------------------------------------------------
 
-using UnityEngine;
 using OktoSDK.Auth;
 using static OktoSDK.LoginOAuthDataModels;
 

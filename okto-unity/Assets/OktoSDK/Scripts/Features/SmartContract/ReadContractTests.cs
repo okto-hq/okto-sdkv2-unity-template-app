@@ -46,7 +46,7 @@ namespace OktoSDK.Features.SmartContract
                 string abi = @"[{""inputs"":[],""name"":""name"",""outputs"":[{""internalType"":""string"",""name"":"""",""type"":""string""}],""stateMutability"":""view"",""type"":""function""}]";
                 string functionName = "name";
 
-                return await readContract.ReadSmartContractAsync(abi, functionName, contractAddress);
+                return await readContract.ReadSmartContractAsync("Polygon Amoy testnet",abi, functionName, contractAddress);
             }
             catch (Exception ex)
             {
@@ -61,7 +61,7 @@ namespace OktoSDK.Features.SmartContract
                 string abi = @"[{""inputs"":[],""name"":""symbol"",""outputs"":[{""internalType"":""string"",""name"":"""",""type"":""string""}],""stateMutability"":""view"",""type"":""function""}]";
                 string functionName = "symbol";
 
-                return await readContract.ReadSmartContractAsync(abi, functionName, contractAddress);
+                return await readContract.ReadSmartContractAsync("Polygon Amoy testnet", abi, functionName, contractAddress);
             }
             catch (Exception ex)
             {
@@ -76,7 +76,7 @@ namespace OktoSDK.Features.SmartContract
                 string abi = @"[{""inputs"":[],""name"":""decimals"",""outputs"":[{""internalType"":""uint8"",""name"":"""",""type"":""uint8""}],""stateMutability"":""view"",""type"":""function""}]";
                 string functionName = "decimals";
 
-                return await readContract.ReadSmartContractAsync(abi, functionName, contractAddress);
+                return await readContract.ReadSmartContractAsync("Polygon Amoy testnet", abi, functionName, contractAddress);
             }
             catch (Exception ex)
             {
@@ -91,7 +91,7 @@ namespace OktoSDK.Features.SmartContract
                 string abi = @"[{""inputs"":[],""name"":""totalSupply"",""outputs"":[{""internalType"":""uint256"",""name"":"""",""type"":""uint256""}],""stateMutability"":""view"",""type"":""function""}]";
                 string functionName = "totalSupply";
 
-                return await readContract.ReadSmartContractAsync(abi, functionName, contractAddress);
+                return await readContract.ReadSmartContractAsync("Polygon Amoy testnet", abi, functionName, contractAddress);
             }
             catch (Exception ex)
             {
@@ -107,7 +107,7 @@ namespace OktoSDK.Features.SmartContract
                 string functionName = "balanceOf";
                 string parameters = ownerAddress;
 
-                return await readContract.ReadSmartContractAsync(abi, functionName, contractAddress, parameters);
+                return await readContract.ReadSmartContractAsync("Polygon Amoy testnet", abi, functionName, contractAddress, parameters);
             }
             catch (Exception ex)
             {
@@ -123,7 +123,7 @@ namespace OktoSDK.Features.SmartContract
                 string functionName = "allowance";
                 string parameters = $"{ownerAddress},{testAddress}";
 
-                return await readContract.ReadSmartContractAsync(abi, functionName, contractAddress, parameters);
+                return await readContract.ReadSmartContractAsync("Polygon Amoy testnet", abi, functionName, contractAddress, parameters);
             }
             catch (Exception ex)
             {
@@ -138,7 +138,7 @@ namespace OktoSDK.Features.SmartContract
                 string abi = @"[{""inputs"":[],""name"":""DOMAIN_SEPARATOR"",""outputs"":[{""internalType"":""bytes32"",""name"":"""",""type"":""bytes32""}],""stateMutability"":""view"",""type"":""function""}]";
                 string functionName = "DOMAIN_SEPARATOR";
 
-                return await readContract.ReadSmartContractAsync(abi, functionName, contractAddress);
+                return await readContract.ReadSmartContractAsync("Polygon Amoy testnet", abi, functionName, contractAddress);
             }
             catch (Exception ex)
             {
@@ -154,7 +154,7 @@ namespace OktoSDK.Features.SmartContract
                 string functionName = "nonces";
                 string parameters = ownerAddress;
 
-                return await readContract.ReadSmartContractAsync(abi, functionName, contractAddress, parameters);
+                return await readContract.ReadSmartContractAsync("Polygon Amoy testnet", abi, functionName, contractAddress, parameters);
             }
             catch (Exception ex)
             {
@@ -169,7 +169,7 @@ namespace OktoSDK.Features.SmartContract
                 string abi = @"[{""inputs"":[],""name"":""eip712Domain"",""outputs"":[{""internalType"":""bytes1"",""name"":""fields"",""type"":""bytes1""},{""internalType"":""string"",""name"":""name"",""type"":""string""},{""internalType"":""string"",""name"":""version"",""type"":""string""},{""internalType"":""uint256"",""name"":""chainId"",""type"":""uint256""},{""internalType"":""address"",""name"":""verifyingContract"",""type"":""address""},{""internalType"":""bytes32"",""name"":""salt"",""type"":""bytes32""},{""internalType"":""uint256[]"",""name"":""extensions"",""type"":""uint256[]""}],""stateMutability"":""view"",""type"":""function""}]";
                 string functionName = "eip712Domain";
 
-                return await readContract.ReadSmartContractAsync(abi, functionName, contractAddress);
+                return await readContract.ReadSmartContractAsync("Polygon Amoy testnet", abi, functionName, contractAddress);
             }
             catch (Exception ex)
             {

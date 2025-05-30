@@ -34,7 +34,7 @@ namespace OktoSDK.Auth
         public OktoClientConfig Config => _config;
         public static bool isWhatsAppLogin { get; set; }
 
-        public void Initialize(string environment = "sandbox", string clientPrivateKey = null, string clientSWA = null)
+        public void Initialize(string environment = OktoEnv.SANDBOX, string clientPrivateKey = null, string clientSWA = null)
         {
             clientPrivateKey ??= Environment.GetClientPrivateKey(environment);
             clientSWA ??= Environment.GetClientSWA(environment);

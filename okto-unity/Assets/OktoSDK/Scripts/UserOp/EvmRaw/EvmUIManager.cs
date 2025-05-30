@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using Newtonsoft.Json;
 using OktoSDK.Auth;
 using OktoSDK.BFF;
-using OktoSDK.Models.Wallet;
 using TMPro;
 using UnityEngine;
 using UnityEngine.UI;

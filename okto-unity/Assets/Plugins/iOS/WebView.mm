@@ -210,6 +210,40 @@ window.Unity = { \
                 } \
             }); \
             \
+            (function() { \
+                window.unityBridge = { \
+                    postMessage: function(msg) { \
+                        try { \
+                            msg = (typeof msg === 'string') ? msg : JSON.stringify(msg); \
+                            msg = encodeURIComponent(msg); \
+                            if (window.Unity && typeof Unity.call === 'function') { \
+                                Unity.call(msg); \
+                            } else if (window.webkit && window.webkit.messageHandlers && window.webkit.messageHandlers.unityControl) { \
+                                window.webkit.messageHandlers.unityControl.postMessage(msg); \
+                            } else { \
+                                console.error('Unity bridge not found'); \
+                            } \
+                        } catch (e) { \
+                            console.error('Failed to send message to Unity:', e); \
+                        } \
+                    } \
+                }; \
+                \
+                globalThis.requestChannel = globalThis.requestChannel || { \
+                    postMessage: function(msg) { \
+                        console.log('requestChannel Event from WebView:', msg); \
+                        try { \
+                            let parsedMsg = (typeof msg === 'string') ? JSON.parse(msg) : msg; \
+                            window.unityBridge.postMessage(parsedMsg); \
+                        } catch (e) { \
+                            console.error('Error formatting requestChannel message:', e); \
+                        } \
+                    } \
+                }; \
+                \
+                console.log('Unity WebView bridge initialized for Android and iOS'); \
+            })(); \
+            \
             window.Unity.call(JSON.stringify({ type: 'test', message: 'Bridge initialized early' })); \
         "];
 

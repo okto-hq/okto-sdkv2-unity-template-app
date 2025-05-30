@@ -14,18 +14,6 @@ namespace OktoSDK
             try
             {
                 var bffWallets = await BffClientRepository.GetWallets();
-                
-                // Convert BFF wallets to model wallets
-                //List<Wallet> modelWallets = new List<Wallet>();
-                //foreach (var bffWallet in bffWallets)
-                //{
-                //    modelWallets.Add(new Wallet
-                //    {
-                //        address = bffWallet.address,
-                //        networkName = bffWallet.networkName
-                //    });
-                //}
-                
                 return bffWallets;
             }
             catch (Exception error)

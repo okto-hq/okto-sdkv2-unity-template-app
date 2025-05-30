@@ -23,7 +23,7 @@ namespace OktoSDK.Example
         [SerializeField] private bool autoSelectWallet = true;
         
         // Event that fires when the entire process is complete
-        public event Action<CallDataDecoder.DecodedCallData> OnWorkflowCompleted;
+        public event Action<DecodingCore.DecodedCallData> OnWorkflowCompleted;
         
         // Event that fires when any step of the workflow fails
         public event Action<string, string> OnWorkflowFailed;

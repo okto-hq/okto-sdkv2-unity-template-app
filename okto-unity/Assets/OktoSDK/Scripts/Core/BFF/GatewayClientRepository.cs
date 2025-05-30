@@ -36,26 +36,37 @@ namespace OktoSDK.Auth
             public T[] Params { get; set; }
         }
 
+        //private class RpcResponse<T>
+        //{
+        //    public string Jsonrpc { get; set; }
+        //    public string Id { get; set; }
+        //    public T Result { get; set; }
+        //    public OktoSDK.BFF.Error Error { get; set; }
+        //}
+
         private class RpcResponse<T>
         {
-            public string Jsonrpc { get; set; }
-            public string Id { get; set; }
-            public T Result { get; set; }
+            public T data { get; set; }
             public OktoSDK.BFF.Error Error { get; set; }
         }
 
+        public class AuthenticateResponse
+        {
+            public string status { get; set; }
+            public AuthenticateResult data { get; set; }
+        }
 
         public static async Task<AuthenticateResult> Authenticate(
         OktoClient client,
         AuthenticatePayloadParam payload)
         {
-            var request = new RpcRequest<AuthenticatePayloadParam>
-            {
-                Method = "authenticate",
-                Params = new[] { payload }
-            };
+            //var request = new RpcRequest<AuthenticatePayloadParam>
+            //{
+            //    Method = "authenticate",
+            //    Params = new[] { payload }
+            //};
 
-            var json = JsonConvert.SerializeObject(request, new JsonSerializerSettings
+            var json = JsonConvert.SerializeObject(payload, new JsonSerializerSettings
             {
                 NullValueHandling = NullValueHandling.Ignore
             });
@@ -63,13 +74,24 @@ namespace OktoSDK.Auth
             CustomLogger.Log($"Sending request: {json}"); // Log the request payload
             RpcResponse<AuthenticateResult> response = null;
 
-            using (var webRequest = new UnityWebRequest(client.Env.GatewayBaseUrl + "/rpc", "POST"))
+            using (var webRequest = new UnityWebRequest(client.Env.BffBaseUrl + "/api/oc/v1/authenticate", "POST"))
             {
                 webRequest.uploadHandler = new UploadHandlerRaw(
                     System.Text.Encoding.UTF8.GetBytes(json));
                 webRequest.downloadHandler = new DownloadHandlerBuffer();
                 webRequest.SetRequestHeader("Content-Type", "application/json");
                 webRequest.SetRequestHeader("Accept", "application/json");
+
+
+                string escapedJson = json.Replace("\"", "\\\"");
+
+                string curlCommand = $"curl -X POST \"{client.Env.BffBaseUrl}/rpc\" " +
+                                     "-H \"Content-Type: application/json\" " +
+                                     "-H \"Accept: application/json\" " +
+                                     $"-d \"{escapedJson}\"";
+
+                CustomLogger.Log($"Generated curl command:\n{curlCommand}");
+
 
                 await webRequest.SendWebRequest();
 
@@ -80,27 +102,32 @@ namespace OktoSDK.Auth
                 {
                     if (webRequest.result != UnityWebRequest.Result.Success)
                     {
+                        // Try to parse error response to get details
                         var errorResponse = JsonConvert.DeserializeObject<RpcResponse<AuthenticateResult>>(responseText);
                         if (errorResponse?.Error != null)
                         {
-                            throw new RpcError(errorResponse.Jsonrpc, errorResponse.Id, errorResponse.Error);
+                            throw new RpcError("", "", errorResponse.Error);
                         }
+                        throw new Exception(webRequest.error);
                     }
 
                     response = JsonConvert.DeserializeObject<RpcResponse<AuthenticateResult>>(responseText);
+
                     if (response.Error != null)
                     {
                         ResponsePanel.SetResponse(responseText);
-
+                        throw new RpcError("", "", response.Error);
                     }
-                    return response.Result;
-                }
 
+                    return response.data;
+                }
                 catch (Exception e)
                 {
+                    CustomLogger.LogError($"Exception during authentication: {e}");
                     ResponsePanel.SetResponse(responseText);
                 }
-                return response.Result;
+
+                return response.data;
 
             }
         }

@@ -42,9 +42,13 @@ namespace OktoSDK
                 ClientSWA = config.ClientSWA
             };
 
-            _envConfig = config.Environment == OktoEnv.SANDBOX
-                ? Constants.SandboxEnvConfig
-                : Constants.ProductionEnvConfig;
+            if (config.Environment == OktoEnv.SANDBOX)
+                _envConfig = Constants.SandboxEnvConfig;
+            else if (config.Environment == OktoEnv.STAGING)
+                _envConfig = Constants.StagingEnvConfig;
+            else if(config.Environment == OktoEnv.PRODUCTION)
+                _envConfig = Constants.ProductionEnvConfig;
+
         }
 
         //autologin
@@ -73,9 +77,12 @@ namespace OktoSDK
                 sessionData = userDetails.sessionData
             };
 
-            _envConfig = config.Environment == OktoEnv.SANDBOX
-            ? Constants.SandboxEnvConfig
-            : Constants.ProductionEnvConfig;
+            if (config.Environment == OktoEnv.SANDBOX)
+                _envConfig = Constants.SandboxEnvConfig;
+            else if (config.Environment == OktoEnv.STAGING)
+                _envConfig = Constants.StagingEnvConfig;
+            else if (config.Environment == OktoEnv.PRODUCTION)
+                _envConfig = Constants.ProductionEnvConfig;
         }
 
         public async Task<AuthenticateResult> LoginUsingOAuth(AuthData authData, Action<SessionConfig> onSuccess = null)
@@ -123,7 +130,7 @@ namespace OktoSDK
             }
         }
 
-        public async Task<string> GetAuthorizationToken()
+        public string GetAuthorizationToken()
         {
             //return idToken;
             if (_sessionConfig?.SessionPrivKey == null)
