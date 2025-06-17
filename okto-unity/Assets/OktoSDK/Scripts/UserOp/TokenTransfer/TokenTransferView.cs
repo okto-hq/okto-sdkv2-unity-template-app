@@ -70,21 +70,15 @@ namespace OktoSDK
                 caip2Id = network
             };
 
-            CustomLogger.Log($"Generated transaction: {JsonConvert.SerializeObject(transaction, Formatting.Indented)}");
-
             userOp = await CreateUserOp(transaction);
             string userOpStr = JsonConvert.SerializeObject(userOp, Formatting.Indented);
-            CustomLogger.Log($"UserOp created: {JsonConvert.SerializeObject(userOp, Formatting.Indented)}");
-
 
             userOp = SignUserOp(userOp, network);
             userOpStr = JsonConvert.SerializeObject(userOp, Formatting.Indented);
-            CustomLogger.Log($"UserOp Signed: {JsonConvert.SerializeObject(userOp, Formatting.Indented)}");
 
             BFF.JsonRpcResponse<ExecuteResult> txHash = await ExecuteUserOp(userOp);
             string txHashStr = JsonConvert.SerializeObject(txHash, Formatting.Indented);
 
-            CustomLogger.Log($"Transaction executed. Hash: {txHashStr}");
 
             //clear all inputfield
             OnClose();
@@ -137,7 +131,6 @@ namespace OktoSDK
             userOp = await CreateUserOp(transaction);
             string userOpStr = JsonConvert.SerializeObject(userOp, Formatting.Indented);
             ResponsePanel.SetResponse(userOpStr);
-            CustomLogger.Log($"UserOp created: {JsonConvert.SerializeObject(userOp, Formatting.Indented)}");
             if (userOp != null)
             {
                 signAndExecuteBtn.gameObject.SetActive(true);
@@ -149,7 +142,6 @@ namespace OktoSDK
             Loader.ShowLoader();
 
             userOp = SignUserOp(userOp, network);
-            CustomLogger.Log($"UserOp Signed: {JsonConvert.SerializeObject(userOp, Formatting.Indented)}");
             BFF.JsonRpcResponse<ExecuteResult> txHash = await ExecuteUserOp(userOp);
             string txHashStr = JsonConvert.SerializeObject(txHash, Formatting.Indented);
             ResponsePanel.SetResponse(txHashStr);
@@ -159,8 +151,6 @@ namespace OktoSDK
         {
             BFF.JsonRpcResponse<ExecuteResult> txHash = await ExecuteUserOp(userOp);
             string txHashStr = JsonConvert.SerializeObject(txHash, Formatting.Indented);
-
-            CustomLogger.Log($"Transaction executed. Hash: {txHashStr}");
 
             ResponsePanel.SetResponse(txHashStr);
         }
@@ -194,14 +184,9 @@ namespace OktoSDK
             if (!string.IsNullOrEmpty(feePayer.text))
             {
                 TransactionConstants.FeePayerAddress = feePayer.text;
-                CustomLogger.Log(TransactionConstants.FeePayerAddress);
             }
 
-            CustomLogger.Log("parsedAmount " + parsedAmount);
-
             string txHashStr = await ExecuteTokenTransfer(receiptAddress.text, parsedAmount, network, tokenAddress.text);
-            CustomLogger.Log($"Transaction executed. Hash: {txHashStr}");
-
             ResponsePanel.SetResponse(txHashStr);
         }
 
@@ -209,11 +194,6 @@ namespace OktoSDK
         {
             var nonce = Guid.NewGuid();
             string guidString = nonce.ToString("N");
-
-            CustomLogger.Log($"Generated nonce : {nonce}");
-
-            CustomLogger.Log("Step 1: Creating UserOp");
-            CustomLogger.Log("Sessipn.PrivateKey" + OktoAuthManager.GetSession().SessionPrivKey);
 
 
             // Create UserOp
@@ -274,9 +254,6 @@ namespace OktoSDK
                 };
 
                 string txHashStr = await ExecuteTokenTransfer(transferParams.recipientWalletAddress, transferParams.amount, caip2Id, transferParams.tokenAddress);
-             
-                CustomLogger.Log($"Transaction executed. Hash: {txHashStr}");
-                CustomLogger.Log("Starting TestTokenTransfer");
 
                 ResponsePanel.SetResponse(txHashStr);
             }

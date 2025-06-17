@@ -18,14 +18,12 @@ namespace OktoSDK.OnRamp
         public async Task<string> GetTransactionToken(string authToken, string _deviceToken)
         {
             string url = OktoAuthManager.GetOktoClient().Env.BffBaseUrl + "/api/v2/transaction_token";
-            CustomLogger.Log("authToken " + authToken);
 
             using (UnityWebRequest request = new UnityWebRequest(url, "POST"))
             {
                 request.downloadHandler = new DownloadHandlerBuffer();
 
                 // Log headers and Authorization token being sent
-                CustomLogger.Log($"Authorization Header: Bearer {authToken}");
                 request.SetRequestHeader("Authorization", $"Bearer {authToken}");
                 request.SetRequestHeader("x-source", "okto_wallet_web");
                 request.SetRequestHeader("x-version", "okto_plus");
@@ -41,9 +39,6 @@ namespace OktoSDK.OnRamp
                 while (!operation.isDone)
                     await Task.Yield();
 
-                // Log response code and body for better debugging
-                CustomLogger.Log($"Response Code: {request.responseCode}");
-                CustomLogger.Log($"Response Body: {request.downloadHandler.text}");
 
                 if (request.result != UnityWebRequest.Result.Success)
                 {

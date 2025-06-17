@@ -99,8 +99,6 @@ namespace OktoSDK
                 transactions = new[] { transactionBytes }
             };
 
-            CustomLogger.Log($"Generated jobParamsStruct: {JsonConvert.SerializeObject(jobParamsStruct, Formatting.Indented)}");
-
             byte[] encodedJobParameters = encoder.EncodeParameters(
                 new[] {
                 new Parameter("string", "caip2Id", 1),
@@ -175,8 +173,6 @@ namespace OktoSDK
                 byte[] nonceBytes = HexToByteArray(cleanNonce.PadLeft(64, '0'));
                 BigInteger jobId = new BigInteger(nonceBytes.Reverse().ToArray(), isUnsigned: true);
 
-                CustomLogger.Log($"Using jobId: {jobId}");
-
                 // Encode initiateJob parameters
                 byte[] initiateJobParamsData = encoder.EncodeParameters(
                     TransactionConstants.INTENT_ABI,
@@ -215,7 +211,6 @@ namespace OktoSDK
             catch (Exception ex)
             {
                 CustomLogger.LogError($"Error generating calldata: {ex.Message}");
-                CustomLogger.LogError($"Nonce used: {nonce}");
                 throw;
             }
         }
@@ -234,8 +229,6 @@ namespace OktoSDK
 
             // Fetch gas price info
             UserOperationGasPriceResult gasPriceResult = (await TransactionConstants.GetUserOperationGasPriceAsync()).data;
-
-            CustomLogger.Log("EnvironmentHelper.GetPaymasterAddress() " + EnvironmentHelper.GetPaymasterAddress());
 
             return new UserOpType
             {

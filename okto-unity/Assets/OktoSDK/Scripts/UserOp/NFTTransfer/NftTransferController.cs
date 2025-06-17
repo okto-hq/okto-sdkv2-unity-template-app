@@ -64,7 +64,6 @@ namespace OktoSDK
         // Step 2: Encode Job Parameters
         public byte[] EncodeJobParameters(NFTTransferIntentParamsType transaction)
         {
-            CustomLogger.Log(JsonConvert.SerializeObject(transaction, Formatting.Indented));
             //BigInteger bigNumber = transaction.amount;
             byte[] encodedJobParameters = encoder.EncodeParameters(
                 new[] {

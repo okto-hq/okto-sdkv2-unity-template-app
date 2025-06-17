@@ -9,7 +9,7 @@ EditorBuildSettings:
     path: Assets/OktoSDK/Scene/OktoDemo.unity
     guid: 9fc0d4010bbf28b4594072e72b8655ab
   - enabled: 1
-    path: Assets/OktoSDK/Scene/Demo1.unity
+    path: Assets/OktoSDK/Scene/PrefabDemo.unity
     guid: dadbb3285db7cff419862d9660c14413
   - enabled: 1
     path: Assets/OktoSDK/Scene/EmptyScene.unity

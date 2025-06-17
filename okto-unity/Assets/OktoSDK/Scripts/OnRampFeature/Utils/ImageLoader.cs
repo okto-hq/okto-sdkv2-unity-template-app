@@ -38,7 +38,7 @@ namespace OktoSDK.OnRamp
                 }
                 else
                 {
-                    CustomLogger.LogError("Failed to load image: " + request.error);
+                    //CustomLogger.LogError("Failed to load image: " + request.error);
                     return null;
                 }
             }

@@ -88,7 +88,6 @@ namespace OktoSDK.Auth
                 SessionDataUserSignature = await SignMessage(messageBytes, sessionKey.PrivateKeyHexWith0x)
             };
 
-            CustomLogger.Log($"Final payload: {JsonConvert.SerializeObject(payload)}");
             return payload;
         }
 

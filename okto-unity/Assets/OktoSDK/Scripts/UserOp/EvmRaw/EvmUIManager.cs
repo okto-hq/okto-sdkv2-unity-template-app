@@ -76,7 +76,6 @@ namespace OktoSDK
             {
                 string message = "You are not logged In!";
                 ResponsePanel.SetResponse(message);
-                CustomLogger.Log(message);
                 return false;
             }
 
@@ -152,7 +151,6 @@ namespace OktoSDK
         private void SelectChain(int index)
         {
             Loader.ShowLoader();
-
             SetChain();
         }
 
