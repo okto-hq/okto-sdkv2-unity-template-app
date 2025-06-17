@@ -344,15 +344,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   tokenId: 
-  isManually: 1
-  isAutoLoginEnabled: 1
-  clientDetails:
-  - env: sandbox
-    clientSwa: 0x98D0464243b04121d49D87D8035e5D29F87c208C
-    clientPrivateKey: 0xd6b6ee557483be9559ca898eca93c65ba88e9775663b49b5b9f69cc0aa97e276
-  googleWebClientId: 
-  isLogEnabled: 1
-  defaulOrientation: 3
+  config: {fileID: 11400000, guid: 55bb4b2766aaf0642967d955b0a26127, type: 2}
 --- !u!1 &8351184375621236736
 GameObject:
   m_ObjectHideFlags: 0

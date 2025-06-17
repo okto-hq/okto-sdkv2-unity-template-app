@@ -87,10 +87,8 @@ namespace OktoSDK
 
             userOp = await CreateUserOp(data);
             string userOpStr = JsonConvert.SerializeObject(userOp, Formatting.Indented);
-            CustomLogger.Log($"UserOp created: {JsonConvert.SerializeObject(userOp, Formatting.Indented)}");
 
             userOp = SignUserOp(userOp);
-            CustomLogger.Log($"UserOp Signed: {JsonConvert.SerializeObject(userOp, Formatting.Indented)}");
 
             BFF.JsonRpcResponse<ExecuteResult> txHash = await ExecuteUserOp(userOp);
             string txHashStr = JsonConvert.SerializeObject(txHash, Formatting.Indented);
@@ -178,7 +176,6 @@ namespace OktoSDK
             Loader.ShowLoader();
 
             userOp = SignUserOp(userOp);
-            CustomLogger.Log($"UserOp Signed: {JsonConvert.SerializeObject(userOp, Formatting.Indented)}");
             BFF.JsonRpcResponse<ExecuteResult> txHash = await ExecuteUserOp(userOp);
             string txHashStr = JsonConvert.SerializeObject(txHash, Formatting.Indented);
             ResponsePanel.SetResponse(txHashStr);
@@ -250,9 +247,6 @@ namespace OktoSDK
             var nonce = Guid.NewGuid();
             string guidString = nonce.ToString("N");
 
-            CustomLogger.Log($"Generated nonce : {nonce}");
-
-            CustomLogger.Log("Step 1: Creating UserOp");
             // Create UserOp
             var userOp = await nftTransfer.CreateUserOp(
                 userSWA: OktoAuthManager.GetSession().UserSWA,
@@ -320,9 +314,6 @@ namespace OktoSDK
                 transferParams.nftType,
                 network);
 
-            CustomLogger.Log("Starting TestTokenTransfer");
-
-            CustomLogger.Log($"Transaction executed. Hash: {txHashStr}");
             ResponsePanel.SetResponse(txHashStr);
         }
     }

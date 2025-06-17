@@ -64,12 +64,9 @@ namespace OktoSDK
                 return;
             }
 
-            CustomLogger.Log("Transaction button clicked");
-
             if (!string.IsNullOrEmpty(feePayer.text))
             {
                 TransactionConstants.FeePayerAddress = feePayer.text;
-                CustomLogger.Log(TransactionConstants.FeePayerAddress);
             }
 
             string txHashStr = await evmRawPrefab.CallEvmRaw(
@@ -124,7 +121,6 @@ namespace OktoSDK
             if (!string.IsNullOrEmpty(feePayer.text))
             {
                 TransactionConstants.FeePayerAddress = feePayer.text;
-                CustomLogger.Log(TransactionConstants.FeePayerAddress);
             }
 
             var tx = evmRawPrefab.EvmRawManager.evmRawController.CreateTransaction(

@@ -70,7 +70,6 @@ namespace OktoSDK
             {
                 string message = "You are not logged In!";
                 ResponsePanel.SetResponse(message);
-                CustomLogger.Log(message);
                 return false;
             }
 

@@ -32,8 +32,6 @@ namespace OktoSDK
             var nonce = Guid.NewGuid();
             string guidString = nonce.ToString("N");
 
-            CustomLogger.Log($"Generated fresh nonce: {nonce}");
-
             var userOp = await evmRawController.CreateUserOp(
                 userSWA: OktoAuthManager.GetOktoClient()._sessionConfig.UserSWA,
                 clientSWA: OktoAuthManager.GetOktoClient().ClientSWA,
@@ -48,7 +46,6 @@ namespace OktoSDK
             );
 
             string userOpJson = JsonConvert.SerializeObject(userOp, Formatting.Indented);
-            CustomLogger.Log($"UserOp created: {userOpJson}");
 
             return userOp;
         }
@@ -67,7 +64,6 @@ namespace OktoSDK
             userOp.signature = signedUserOp.signature;
 
             string userOpJson = JsonConvert.SerializeObject(userOp, Formatting.Indented);
-            CustomLogger.Log($"UserOp signed: {userOpJson}");
 
             return signedUserOp;
         }
@@ -127,15 +123,12 @@ namespace OktoSDK
 
             var userOp = await CreateUserOp(transaction);
 
-            CustomLogger.Log($"UserOp created: {JsonConvert.SerializeObject(userOp, Formatting.Indented)}");
 
             var signedUserOp = SignUserOp(userOp);
-            CustomLogger.Log($"UserOp Signed: {JsonConvert.SerializeObject(signedUserOp, Formatting.Indented)}");
 
             BFF.JsonRpcResponse<ExecuteResult> txHash = await ExecuteUserOp(signedUserOp, signedUserOp.signature);
             string txHashStr = JsonConvert.SerializeObject(txHash, Formatting.Indented);
 
-            CustomLogger.Log($"Transaction executed. Hash: {txHashStr}");
 
             return txHashStr;
         }

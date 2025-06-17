@@ -24,6 +24,7 @@ namespace OktoSDK.OnRamp
         public string chainId;
         public string paymentId = "";   // optional
         public string isDirectFlow = ""; // optional
+        public string host = "sdk"; // required for sdk
 
         public string GenerateUrl(string baseUrl)
         {
@@ -54,6 +55,7 @@ namespace OktoSDK.OnRamp
                 { "payToken", payToken },
                 { "chain", chainId},
                 { "tokenName", tokenName },
+                { "host", host }
             };
         }
     }

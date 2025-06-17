@@ -40,7 +40,6 @@ namespace OktoSDK.BFF
         public string UserSWA;
     }
 
-
     public static class OktoEnv
     {
         public const string SANDBOX = "sandbox";
